@@ -1,4 +1,4 @@
-/// ATMs belonging to a branch.
+/// ATMs belonging to a branch
 Class FCE.ATM Extends (%Persistent, %Populate, %XML.Adaptor)
 {
 
