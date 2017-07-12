@@ -13,6 +13,35 @@ Property Player As BG.Player;
 
 Index PlayerIndex on Player;
 
+ClassMethod GetCharactersArray(sessionId as %String, Output st as %Status) As %DynamicArray
+{
+	set arr = []
+
+	set rs = ##class(%ResultSet).%New()
+	set rs.ClassName = "BG.EldritchHorror.SessionCharacter"
+	set rs.QueryName = "CharactersBySession"
+	
+	set st = rs.%Execute(sessionId)
+	
+	if st = $$$OK {
+		while rs.%Next() {
+			set obj = {}
+			set obj.player = rs.Player
+			set obj.character = rs.Character
+			do arr.%Push(obj)
+		}
+	}
+	
+	return arr
+}
+
+Query CharactersBySession(id) As %SQLQuery [SqlProc]
+{
+Select "character"->name as "Character", player->name as Player
+from SessionCharacter
+where session = :id
+order by "character"
+}
 
 Storage Default
 {

@@ -43,11 +43,43 @@ ClassMethod GetAllSessionsArray(Output st as %Status) As %DynamicArray
 	return arr
 }
 
+ClassMethod GetSessionObject(sessionId as %String, Output st as %Status) as %DynamicObject
+{
+	set obj = {}
+
+	set rs = ##class(%ResultSet).%New()
+	set rs.ClassName = "BG.EldritchHorror.Session"
+	set rs.QueryName = "SessionById"
+	
+	set st = rs.%Execute(sessionId)
+	
+	if st = $$$OK {
+		do rs.%Next() 
+		
+		set obj.ancientOne = rs.AncientOne
+		set obj.date = rs.SessionDate
+		set obj.won = rs.Won
+		set obj.doom = rs.Doom
+		set obj.gates = rs.Gates
+		set obj.monsters = rs.Monsters
+		set obj.mysteriessolved = rs.MysteriesSolved
+	}
+	
+	return obj
+}
+
 Query AllSessions() As %SQLQuery [SqlProc]
 {
 Select %ID, AncientOne->name as AncientOne, %external(SessionDate) as sessiondate, Won
 from Session
 order by SessionDate
+}
+
+Query SessionById(id) As %SQLQuery [SqlProc]
+{
+	Select AncientOne->name as AncientOne, %external(SessionDate) as sessiondate, Won, Doom, Gates, Monsters, MysteriesSolved
+	from Session
+	where id = :id
 }
 
 Storage Default

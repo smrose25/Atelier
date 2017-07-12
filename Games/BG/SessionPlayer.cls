@@ -29,10 +29,10 @@ ClassMethod GetPlayersArray(id as %String, Output st as %Status) As %DynamicArra
 
 Query PlayersBySession(id) As %SQLQuery [SqlProc]
 {
-Select player->name
+Select Player->Name
 from SessionPlayer
-where session = :id
-order by name
+where Session = :id
+order by Name
 }
 
 Storage Default

@@ -53,7 +53,7 @@ ClassMethod GetAllSessions() As %Status
 	do ..SetHeaders()
 	
 	set arr = ##class(BG.EldritchHorror.Session).GetAllSessionsArray(.st)
-	if st = $$$OK {
+	if $$$ISOK(st) {
 		write arr.%ToJSON()
 		
 	}
@@ -62,7 +62,30 @@ ClassMethod GetAllSessions() As %Status
 
 ClassMethod GetSession(id) As %Status
 {
-	return $$$OK
+	do ..SetHeaders()
+	
+	set sessionObj = ##class(BG.EldritchHorror.Session).GetSessionObject(id, .st)
+	if $$$ISERR(st) {
+		return st
+	}
+	
+	set characters = ##class(BG.EldritchHorror.SessionCharacter).GetCharactersArray(id,.st)
+	if $$$ISERR(st) {
+		return st
+	}
+	
+	set players = ##class(BG.SessionPlayer).GetPlayersArray(id,.st)
+	if $$$ISERR(st) {
+		return st
+	}
+	
+	set sessionObj.players = players
+	set sessionObj.characters = characters
+	
+	write sessionObj.%ToJSON()
+	
+	return st
+	
 }
 
 
