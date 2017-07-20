@@ -13,6 +13,8 @@ Property Player As BG.Player;
 
 Index PlayerIndex on Player;
 
+Property Survived As %Boolean;
+
 ClassMethod GetCharactersArray(sessionId as %String, Output st as %Status) As %DynamicArray
 {
 	set arr = []
@@ -28,6 +30,7 @@ ClassMethod GetCharactersArray(sessionId as %String, Output st as %Status) As %D
 			set obj = {}
 			set obj.player = rs.Player
 			set obj.character = rs.Character
+			set obj.survived = rs.Survived
 			do arr.%Push(obj)
 		}
 	}
@@ -37,7 +40,7 @@ ClassMethod GetCharactersArray(sessionId as %String, Output st as %Status) As %D
 
 Query CharactersBySession(id) As %SQLQuery [SqlProc]
 {
-Select "character"->name as "Character", player->name as Player
+Select "character"->name as "Character", player->name as Player, Survived
 from SessionCharacter
 where session = :id
 order by "character"
@@ -57,6 +60,9 @@ Storage Default
 </Value>
 <Value name="4">
 <Value>Player</Value>
+</Value>
+<Value name="5">
+<Value>Survived</Value>
 </Value>
 </Data>
 <DataLocation>^BG.EldritcEAAF.SessionChar2E31D</DataLocation>

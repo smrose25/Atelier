@@ -10,6 +10,7 @@ XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
 
 <Route Url="/sessions" Method="GET" Call="GetAllSessions" />
 <Route Url="/sessions/:id" Method="GET" Call="GetSession" />
+<Route Url="/sessions" Method="POST" Call="InsertSession" />
 
 </Routes>
 }
@@ -88,5 +89,10 @@ ClassMethod GetSession(id) As %Status
 	
 }
 
+ClassMethod InsertSession() As %Status
+{
+	
+	return $$$OK
+}
 
 }
