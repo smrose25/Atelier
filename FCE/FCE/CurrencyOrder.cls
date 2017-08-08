@@ -32,14 +32,14 @@ Index ATMIndex On ATM;
 
 Property AmountOut As %Numeric(MINVAL = 0);
 
-Property CurrencyOut As FCE.CurrencyName;
+Property CurrencyOut As FCE.Currency;
 
 /// AmountIn reduced by transaction fee
 Property AmountIn As %Numeric(MINVAL = 0);
 
-Property CurrencyIn As FCE.CurrencyName;
+Property CurrencyIn As FCE.Currency;
 
-Property ExchangeRate As %Decimal(MINVAL = .001, SCALE = 3);
+Property ExchangeRate As %Decimal(MINVAL = .1, SCALE = 2);
 
 Property Fee As %Numeric;
 
@@ -74,15 +74,11 @@ Trigger UpdateDeleteInNotes [ Event = UPDATE/DELETE, Foreach = row/object, Time 
 	set note = "At " _ $zdt($h) _ ", " _ $username _ " " _ changed _ " Order #"
 			   _ {ID} _ " originally requested by " _ {Requestor}
 	           _ " (for " _ {AmountOut} _ " " _ {CurrencyOut} _ ")"
-	set atm = ##class(FCE.ATM).%OpenId({ATM}, 4, .st)
-	if $$$ISOK(st) {
-		do atm.Notes.MoveToEnd()
-		do atm.Notes.WriteLine(note)
-		set st = atm.%Save()
-	}
-	if ($$$ISERR(st)) { 
-		set %msg = "Couldn't update ATM notes." 
-	}
+	set atm = ##class(FCE.ATM).%OpenId({ATM}, 4)
+	do atm.Notes.MoveToEnd()
+	do atm.Notes.WriteLine(note)
+	set st = atm.%Save()
+	if ($$$ISERR(st)) { set %msg = "Couldn't update ATM notes." }
 }
 
 /// This callback method is invoked by the <METHOD>%New</METHOD> method to 
@@ -93,13 +89,15 @@ Trigger UpdateDeleteInNotes [ Event = UPDATE/DELETE, Foreach = row/object, Time 
 /// When customizing this method, override the arguments with whatever variables and types you expect to receive from %New().
 /// For example, if you're going to call %New, passing 2 arguments, %OnNew's signature could be:
 /// <p>Method %OnNew(dob as %Date = "", name as %Name = "") as %Status
-Method %OnNew(currencyOut As FCE.CurrencyName = "", amountOut As %Numeric = 0, currencyIn As FCE.CurrencyName = "", amountIn As %Numeric = 0, Output errorStatus As %Status) As %Status [ Private, ProcedureBlock = 1, ServerOnly = 1 ]
+Method %OnNew(currencyOut As FCE.Currency = "", amountOut As %Numeric = 0, currencyIn As FCE.Currency = "", amountIn As %Numeric = 0, Output errorStatus As %Status) As %Status [ Private, ProcedureBlock = 1, ServerOnly = 1 ]
 {
 	set ..CurrencyOut = currencyOut
 	set ..AmountOut = amountOut
 	set ..CurrencyIn = currencyIn
 	set ..AmountIn = amountIn
 	set ..Status = "Requested"
+	set ..Satisfaction = 3
+	set ..ExchangeRate = 1
 	set ..Fee = 0
 	
 	set errorStatus = ..%ValidateObject() // validate the new object
@@ -158,17 +156,6 @@ Method OnPopulate() As %Status
 	else {
 		set ..Status = ##class(%PopulateUtils).ValueList("-Requested-Pending-Rejected-Paid-Problem-Canceled")
 	}
-	// make sure CurrencyIn and CurrencyOut are different
-	while (..CurrencyIn = ..CurrencyOut) {
-		set ..CurrencyOut = ##class(FCE.Currency).Currency()
-	}
-	// set fee
-	set ..Fee = ..AmountIn * .025
-	// get exchange rate
-	set rate = ##class(FCE.Currency).ComputeRate(..CurrencyIn, ..CurrencyOut)
-	set ..ExchangeRate = rate
-	// set correct AmountOut
-	set ..AmountOut = (..AmountIn - ..Fee) * rate
 	return $$$OK
 }
 
@@ -177,7 +164,7 @@ Trigger DeletePayment [ Event = DELETE, Foreach = row/object, Time = AFTER ]
 {
 	return:({Payment} = "")
     new SQLCODE // ensure SQLCODE is private to trigger
-    &sql(delete from FCE.Payment where ID = :{Payment})
+    &sql(delete from FCE.Payment where id = :{Payment})
 	if (SQLCODE < 0) { set %ok = 0, %msg = "SQLCODE: "_ SQLCODE }
 }
 

@@ -37,7 +37,7 @@ XData Contents [ XMLNamespace = "http://www.intersystems.com/zen" ]
 {
 <page id="page" xmlns="http://www.intersystems.com/zen" title="FCE Currency Images">
 <label id="title" value="FCE Currency Images"/>
-<dataCombo id="cmbCurrencies" label="Choose a currency" sql="select ID, currency from fce.currency order by currency"
+<dataCombo id="cmbCurrencies" label="Choose a currency" sql="select id, currency from fce.currencyimage order by currency"
            onchange="zenPage.showImage();"/>
 <spacer height="40px"/>
 
@@ -63,14 +63,16 @@ ClientMethod showImage() [ Language = javascript ]
 Method %OnAfterCreatePage() As %Status
 {
 	#dim %page as %ZEN.Component.page
-	set abbreviations = ##class(FCE.CurrencyName).#VALUELIST
-	set currencies = ##class(FCE.Currency).ConvertCurrenciestoListString(abbreviations)
+	set abbreviations = $parameter("FCE.Currency", "VALUELIST")
+	set delim = $extract(abbreviations, 1)
+	set currencies = $extract(abbreviations, 2, *)
+	set currencies = $listfromstring(currencies, delim)
 	for i=1:1:$listlength(currencies) {
 		set componentID = "img" _ $list(currencies, i)
 		set img = ##class(%ZEN.Component.image).%New()
 		set img.id = componentID, img.hidden = 1
 		do %page.%AddChild(img)
-		set currencyImage = ##class(FCE.Currency).%OpenId(i).Image
+		set currencyImage = ##class(FCE.CurrencyImage).%OpenId(i).Image
 		set oid = currencyImage.%Oid()
 		set img.streamId = oid
 	}	

@@ -14,7 +14,7 @@ Property UserCPUTime As %Integer;
 Property DiskReadTime As %Integer;
 
 /// Helper method
-ClassMethod Run(logging As %Boolean = 0)
+ClassMethod Run()
 {
     set testSuite = "FCETests"
     
@@ -29,15 +29,13 @@ ClassMethod Run(logging As %Boolean = 0)
     set testCase = ..%ClassName(1) // this test case
     set test = testSuite _ ":" _ testCase
 	set quals = "/noload/norecursive/nodelete"
-	set params("Logging") = logging
-    do ##class(%UnitTest.Manager).RunTest(test, quals, .params)
+    do ##class(%UnitTest.Manager).RunTest(test, quals)
     return
 }
 
 /// initialize performance counters
 Method OnBeforeOneTest(testname As %String) As %Status
 {
-	return:(..Manager.UserFields.GetAt("Logging") = 0) $$$OK
 	set ..Duration = $zh
 	set ..Lines = $system.Process.LinesExecuted()
 	set ..Globals = $system.Process.GlobalReferences()
@@ -52,7 +50,6 @@ Method OnBeforeOneTest(testname As %String) As %Status
 /// This is where you could also add code to save the counters to a separate table for analysis.
 Method OnAfterOneTest(testname As %String) As %Status
 {
-	return:(..Manager.UserFields.GetAt("Logging") = 0) $$$OK
 	set ..Duration = $zh - ..Duration
 	set ..Lines = $system.Process.LinesExecuted() - ..Lines
 	set ..Globals = $system.Process.GlobalReferences() - ..Globals

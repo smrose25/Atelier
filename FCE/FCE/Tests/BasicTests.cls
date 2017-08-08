@@ -1,11 +1,11 @@
 Class FCE.Tests.BasicTests Extends FCE.Tests.TestCase
 {
 
-/// holds a referenced FCE.RealEstate object, assigned in OnBeforeAllTests()
-Property RefdRealEstate As FCE.RealEstate [ Private ];
+/// holds the ID of a referenced FCE.RealEstate object, assigned in OnBeforeAllTests()
+Property RefdRealEstateID As %Integer [ Private ];
 
-/// holds an unreferenced FCE.RealEstate object, assigned in OnBeforeAllTests()
-Property UnrefdRealEstate As FCE.RealEstate [ Private ];
+/// holds the ID of an unreferenced FCE.RealEstate object, assigned in OnBeforeAllTests()
+Property UnrefdRealEstateID As %Integer [ Private ];
 
 /// Set up test environment
 Method OnBeforeAllTests() As %Status
@@ -15,7 +15,7 @@ Method OnBeforeAllTests() As %Status
 	set branch.Phone = "999-999-9999"
  
  	/* create a dummy RealEstate object, link it to the Branch above
-       and save the object in the "global" RefdRealEstate property */
+       and save the id in the "global" RefdRealEstateID property */
 	set realestate = ##class(FCE.RealEstate).%New()
 	set realestate.Street = "10 Main Street"
 	set realestate.City = "New York"
@@ -24,17 +24,17 @@ Method OnBeforeAllTests() As %Status
 	set status = realestate.%Save()
 	set branch.Address = realestate
 	set status = branch.%Save()
-	set ..RefdRealEstate = realestate
+	set ..RefdRealEstateID = realestate.%Id()
 	
 	/* create a dummy RealEstate object that *isn't* referenced by a Branch
-	   save the object in the "global" UnrefdRealEstate property */
+	   save the id in the "global" UnrefdRealEstateID property */
 	set realestate = ##class(FCE.RealEstate).%New()
 	set realestate.Street = "20 Oak Street"
 	set realestate.City = "Boston"
 	set realestate.State = "MA"
 	set realestate.Zip = "99999"
 	set status = realestate.%Save()
-	set ..UnrefdRealEstate = realestate
+	set ..UnrefdRealEstateID = realestate.%Id()
  	return $$$OK
 }
 
@@ -45,8 +45,8 @@ Method OnAfterAllTests() As %Status
 	/// remove the leftover branch and the initial branch
 	&sql(delete from FCE.Branch
 	     where (Phone = '999-999-9999' or Phone = '999-999-0000'))
-	set ID1 = ..RefdRealEstate.%Id(), ID2 = ..UnrefdRealEstate.%Id()
-	&sql(delete from FCE.RealEstate where ID in (:ID1, :ID2))
+	set id1 = ..RefdRealEstateID, id2 = ..UnrefdRealEstateID
+	&sql(delete from FCE.RealEstate where ID in (:id1, :id2))
 	return $$$OK
 }
 
@@ -73,12 +73,14 @@ Method TestBranch()
 
 	// assertion 5
 	set branch.Phone = "999-999-0000"
-	set branch.Address = ..RefdRealEstate
+	set realestateid = ..RefdRealEstateID
+	set branch.Address = ##class(FCE.RealEstate).%OpenId(realestateid)
 	set status = branch.%Save()
 	do $$$AssertStatusNotOK(status, "Another Branch already has this address")
 
 	// assertion 6
-	set branch.Address = ..UnrefdRealEstate
+	set realestateid = ..UnrefdRealEstateID
+	set branch.Address = ##class(FCE.RealEstate).%OpenId(realestateid)
 	set branch.Opens = 18000 // open at 5am
 	set status = branch.%Save()
 	do $$$AssertStatusNotOK(status, "Opening at 5am too early")
@@ -101,43 +103,43 @@ Method TestBranch()
 	do $$$AssertStatusOK(status, "Branch saved")
 
 	// assertion 10
-	set branchID = branch.%Id()
-	do $$$AssertNotEquals(branchID, "", "ID assigned")
+	set id = branch.%Id()
+	do $$$AssertNotEquals(id, "", "ID assigned")
 
 	// assertion 11
-	set status = ##class(FCE.Branch).%DeleteId(branchID)
+	set status = ##class(FCE.Branch).%DeleteId(id)
 	do $$$AssertStatusOK(status, "Branch deleted")
 }
 
 /// SQL tests for FCE.Branch table
 Method TestBranchSQL()
 {
-	set realestateID = ..UnrefdRealEstate.%Id()
+	set realestateid = ..UnrefdRealEstateID
 
 	&sql(insert into FCE.Branch (Address)
-	     VALUES (:realestateID))
+	     VALUES (:realestateid))
 	do $$$AssertNotEquals(SQLCODE, 0, "Phone is required")
 	&sql(insert into FCE.Branch (Phone, Address)
-	     VALUES ('9999999999',:realestateID))
+	     VALUES ('9999999999',:realestateid))
 	do $$$AssertNotEquals(SQLCODE, 0, "Phone doesn't match pattern: ###-###-####")
 	&sql(insert into FCE.Branch (Phone, Address)
-	     VALUES ('999-999-9999',:realestateID))
+	     VALUES ('999-999-9999',:realestateid))
 	do $$$AssertNotEquals(SQLCODE, 0, "Phone must be unique")
 	&sql(insert into FCE.Branch (Phone, Address, Opens)
-	     VALUES ('999-999-0000',:realestateID,18000))
+	     VALUES ('999-999-0000',:realestateid,18000))
 	do $$$AssertNotEquals(SQLCODE, 0, "Opening at 5am too early")
 	&sql(insert into FCE.Branch (Phone, Address, Opens, Closes)
-	     VALUES ('999-999-0000',:realestateID,28800,82800))
+	     VALUES ('999-999-0000',:realestateid,28800,82800))
 	do $$$AssertNotEquals(SQLCODE, 0, "Closing at 11pm too late")
 	&sql(insert into FCE.Branch (Phone, Address, Opens, Closes, NationalCurrency)
-	     VALUES ('999-999-0000',:realestateID,28800,64800,'ABC'))
+	     VALUES ('999-999-0000',:realestateid,28800,64800,'ABC'))
 	do $$$AssertNotEquals(SQLCODE, 0, "ABC is invalid currency")
 	&sql(insert into FCE.Branch (Phone, Address, Opens, Closes, NationalCurrency)
-	     VALUES ('999-999-0000',:realestateID,28800,64800,'USD'))
+	     VALUES ('999-999-0000',:realestateid,28800,64800,'USD'))
 	do $$$AssertEquals(SQLCODE, 0, "Branch saved")
-	set branchID = %ROWID
-	do $$$AssertNotEquals(branchID, "", "ID assigned")
-	&sql(delete from FCE.Branch where ID = :branchID)
+	set branchid = %ROWID
+	do $$$AssertNotEquals(branchid, "", "ID assigned")
+	&sql(delete from FCE.Branch where ID = :branchid)
 	do $$$AssertEquals(SQLCODE, 0, "Branch deleted")
 }
 
@@ -149,7 +151,7 @@ Method TestATM()
 	set branch.Phone = "999-999-0000"
 	set status = branch.%Save()
 	do $$$AssertStatusOK(status, "Branch saved")
-	set branchID = branch.%Id()
+	set id = branch.%Id()
 	// assertion 2
 	set countOfATMs = branch.ATMs.Count()
 	do $$$AssertEquals(countOfATMs, 0, "No ATMs yet")
@@ -167,8 +169,8 @@ Method TestATM()
 	set status = ATMOne.%Save()
 	do $$$AssertStatusOK(status, "ATMOne saved")
 	// assertion 7
-	set ATMOneID = ATMOne.%Id()
-	do $$$AssertNotEquals(ATMOneID, "", "ATMOne ID assigned")
+	set ATMOneid = ATMOne.%Id()
+	do $$$AssertNotEquals(ATMOneid, "", "ATMOne ID assigned")
 	// assertion 8
 	set ATMTwo = ##class(FCE.ATM).%New()
 	do $$$AssertTrue($isobject(ATMTwo), "Create ATMTwo")
@@ -180,13 +182,13 @@ Method TestATM()
 	set status = branch.%Save()
 	do $$$AssertStatusOK(status, "Branch and ATMTwo saved")
 	// assertion 11
-	set ATMTwoID = ATMTwo.%Id()
-	do $$$AssertNotEquals(ATMTwoID, "", "ATMTwo ID assigned")
+	set ATMTwoid = ATMTwo.%Id()
+	do $$$AssertNotEquals(ATMTwoid, "", "ATMTwo ID assigned")
 	// assertion 12
 	set (branch, ATMOne, ATMTwo) = ""
 	do $$$LogMessage("All objects closed")
 	// assertion 13
-	set ATMTwo = ##class(FCE.ATM).%OpenId(ATMTwoID)
+	set ATMTwo = ##class(FCE.ATM).%OpenId(ATMTwoid)
 	do $$$AssertTrue($isobject(ATMTwo), "ATMTwo retrieved")
 	// assertion 14
 	set branch = ATMTwo.Branch
@@ -198,36 +200,36 @@ Method TestATM()
 	set (branch, ATMOne, ATMTwo) = ""
 	do $$$LogMessage("All objects closed")
 	// assertion 17
-	set status = ##class(FCE.Branch).%DeleteId(branchID)
+	set status = ##class(FCE.Branch).%DeleteId(id)
 	do $$$AssertStatusOK(status, "Branch deleted")
 	// assertion 18
-	set ATMOne = ##class(FCE.ATM).%OpenId(ATMOneID)
+	set ATMOne = ##class(FCE.ATM).%OpenId(ATMOneid)
 	do $$$AssertNotTrue($isobject(ATMOne), "ATMOne deleted also")
 	// assertion 19
-	set ATMTwo = ##class(FCE.ATM).%OpenId(ATMTwoID)
+	set ATMTwo = ##class(FCE.ATM).%OpenId(ATMTwoid)
 	do $$$AssertNotTrue($isobject(ATMTwo), "ATMTwo deleted also")
 }
 
 /// SQL tests for FCE.ATM table
 Method TestATMSQL()
 {
-	set realestateID = ..RefdRealEstate.%Id()
+	set realestateid = ..RefdRealEstateID
 
 	&sql(insert into FCE.Branch (Phone) VALUES ('999-999-0000'))
 	do $$$AssertEquals(SQLCODE, 0, "Branch saved")
-	set branchID = %ROWID
-	do $$$AssertNotEquals(branchID, "", "Branch ID assigned")
+	set branchid = %ROWID
+	do $$$AssertNotEquals(branchid, "", "Branch ID assigned")
 	&sql(insert into FCE.ATM (Address)
-	     VALUES (:realestateID))
+	     VALUES (:realestateid))
 	do $$$AssertNotEquals(SQLCODE, 0, "Branch is required to save ATM")
 	&sql(insert into FCE.ATM (Branch, Address)
-	     VALUES (:branchID, :realestateID))
+	     VALUES (:branchid, :realestateid))
 	do $$$AssertEquals(SQLCODE, 0, "ATM saved")
-	set ATMID = %ROWID
-	do $$$AssertNotEquals(ATMID, "", "ATM ID assigned")
-	&sql(delete from FCE.Branch where ID = :branchID)
+	set ATMid = %ROWID
+	do $$$AssertNotEquals(ATMid, "", "ATM ID assigned")
+	&sql(delete from FCE.Branch where ID = :branchid)
 	do $$$AssertEquals(SQLCODE, 0, "Branch deleted")
-	&sql(select ID into :ATMID from FCE.ATM where Branch = :branchID)
+	&sql(select ID into :ATMid from FCE.ATM where Branch = :branchid)
 	do $$$AssertEquals(SQLCODE, 100, "ATM deleted also")
 }
 
@@ -265,33 +267,33 @@ Method TestRealEstate()
 	// assertion 8
 	set realestate.Zip = "99999-4567"
 	set status = realestate.%Save()
-	set realestateID = realestate.%Id()
+	set realestateid = realestate.%Id()
 	do $$$AssertStatusOK(status, "Real Estate saved")
 	// assertion 9
 	set branch = ##class(FCE.Branch).%New()
 	set branch.Phone = "999-999-0000"
 	set branch.Address = realestate
 	set status = branch.%Save()
-	set branchID = branch.%Id()
+	set branchid = branch.%Id()
 	do $$$AssertStatusOK(status, "Branch saved")
 	// assertion 10
 	set (branch, realestate) = ""
 	do $$$LogMessage("All objects closed")
 	// assertion 11
-	set branch = ##class(FCE.Branch).%OpenId(branchID)
-	set realestate = ##class(FCE.RealEstate).%OpenId(realestateID)
+	set branch = ##class(FCE.Branch).%OpenId(branchid)
+	set realestate = ##class(FCE.RealEstate).%OpenId(realestateid)
 	do $$$AssertEquals(branch.Address.City, realestate.City, "Branch references Real Estate")
 	// assertion 12
 	set (branch, realestate) = ""
 	do $$$LogMessage("All objects closed")
 	// assertion 13
-	set status = ##class(FCE.RealEstate).%DeleteId(realestateID)
+	set status = ##class(FCE.RealEstate).%DeleteId(realestateid)
 	do $$$AssertStatusOK(status, "Real Estate deleted")
 	// assertion 14
-	set realestateID = ##class(FCE.Branch).AddressGetStored(branchID)
-	do $$$AssertEquals(realestateID, "", "Branch not linked to Real Estate")
+	set realestateid = ##class(FCE.Branch).AddressGetStored(branchid)
+	do $$$AssertEquals(realestateid, "", "Branch not linked to Real Estate")
 	// assertion 15
-	set status = ##class(FCE.Branch).%DeleteId(branchID)
+	set status = ##class(FCE.Branch).%DeleteId(branchid)
 	do $$$AssertStatusOK(status, "Branch deleted")
 }
 
@@ -317,22 +319,22 @@ Method TestRealEstateSQL()
 	&sql(insert into FCE.RealEstate (Street,City,State,Zip)
              VALUES ('10 Main St.','New York','NY','99999-4567'))
 	do $$$AssertEquals(SQLCODE, 0, "Real Estate saved")
-	set realestateID = %ROWID
-	do $$$AssertNotEquals(realestateID, "", "Real Estate ID assigned")
-	&sql(insert into FCE.Branch (Phone,Address) VALUES ('999-999-0000',:realestateID))
+	set realestateid = %ROWID
+	do $$$AssertNotEquals(realestateid, "", "Real Estate ID assigned")
+	&sql(insert into FCE.Branch (Phone,Address) VALUES ('999-999-0000',:realestateid))
 	do $$$AssertEquals(SQLCODE, 0, "Branch saved")
-	set branchID = %ROWID
-	&sql(select Address->City into :city from FCE.Branch where ID = :branchID)
+	set branchid = %ROWID
+	&sql(select Address->City into :city from FCE.Branch where ID = :branchid)
 	do $$$AssertEquals(SQLCODE, 0, "City retrieved")
 
 	do $$$AssertEquals(city, "New York", "Branch references Real Estate")
-	&sql(delete from FCE.RealEstate where ID = :realestateID)
+	&sql(delete from FCE.RealEstate where ID = :realestateid)
 	do $$$AssertEquals(SQLCODE, 0, "Real Estate deleted")
-	&sql(select Address into :realestateID from FCE.Branch where ID = :branchID)
+	&sql(select Address into :realestateid from FCE.Branch where ID = :branchid)
 	do $$$AssertEquals(SQLCODE, 0, "Real Estate ID retrieved")
 
-	do $$$AssertEquals(realestateID, "", "Branch not linked to Real Estate")
-	&sql(delete from FCE.Branch where ID = :branchID)
+	do $$$AssertEquals(realestateid, "", "Branch not linked to Real Estate")
+	&sql(delete from FCE.Branch where ID = :branchid)
 	do $$$AssertEquals(SQLCODE, 0, "Branch deleted")
 }
 
@@ -350,6 +352,7 @@ Method TestCurrencies()
 	do ATMOne.CurrencyBalances.SetAt(1000,"USD")
 	// assertion 2
 	set status = ATMOne.%Save()
+	set ATMOneid = ATMOne.%Id()
 	do $$$AssertStatusOK(status, "ATM with Currency Balance saved")
 	// assertion 3
 	set count = ATMOne.CurrencyBalances.Count()
@@ -370,24 +373,25 @@ Method TestCurrencies()
 /// SQL tests for FCE.ATM.CurrencyBalances
 Method TestCurrenciesSQL()
 {
-	set realestateID = ..RefdRealEstate.%Id()	
+	set realestateid = ..RefdRealEstateID	
 	
 	&sql(insert into FCE.Branch (Phone) VALUES ('999-999-0000'))
-	set branchID = %ROWID
-	&sql(insert into FCE.ATM (Branch, Address) VALUES (:branchID, :realestateID))
-	set ATMID = %ROWID
+	set branchid = %ROWID
+	&sql(insert into FCE.ATM (Branch, Address) VALUES (:branchid, :realestateid))
+	set ATMid = %ROWID
 	&sql(insert into FCE.ATM_Balance (ATM, element_key, Balance)
-             VALUES (:ATMID, 'USD', '100000'))
+             VALUES (:ATMid, 'USD', '100000'))
 	do $$$AssertNotEquals(SQLCODE, 0, "Currency Balance must be <= 10000")
 	&sql(insert into FCE.ATM_Balance (ATM, element_key, Balance)
-             VALUES (:ATMID, 'USD', '10000'))
+             VALUES (:ATMid, 'USD', '10000'))
 	do $$$AssertEquals(SQLCODE, 0, "ATM with Currency Balance saved")
-	&sql(select count(*) into :count from FCE.ATM_Balance where ATM = :ATMID)
+	&sql(select count(*) into :count from FCE.ATM_Balance where ATM = :ATMid)
 	do $$$AssertEquals(SQLCODE, 0, "Currency Balance count retrieved")
+
 	do $$$AssertEquals(count, 1, "ATM has one Currency Balance")
-	&sql(delete from FCE.ATM_Balance where element_key = 'USD' and ATM = :ATMID)
+	&sql(delete from FCE.ATM_Balance where element_key = 'USD' and ATM = :ATMid)
 	do $$$AssertEquals(SQLCODE, 0, "Currency Balance removed")
-	&sql(delete from FCE.Branch where ID = :branchID)
+	&sql(delete from FCE.Branch where ID = :branchid)
 	do $$$AssertEquals(SQLCODE, 0, "Branch and ATM deleted")
 }
 
@@ -397,55 +401,54 @@ Method TestUpdateATM()
 	// create branch and ATM
 	set branch = ##class(FCE.Branch).%New()
 	set ATM = ##class(FCE.ATM).%New()
-	set ATM.SerialNumber = "X1111Y2222"
-	set euros = 150, dollars = 50
-	do ATM.CurrencyBalances.SetAt(euros, "EUR")
-	do ATM.CurrencyBalances.SetAt(dollars, "USD")
+	set oldEuros = 150, oldDollars = 50
+	do ATM.CurrencyBalances.SetAt(oldEuros, "EUR")
+	do ATM.CurrencyBalances.SetAt(oldDollars, "USD")
 	set ATM.Branch = branch // must do this so that ATM is valid (Saveable) at this point
 	
 	set currencyOut = "EUR", amountOut   = 1000
 	set currencyIn  = "USD", amountIn    = 100
 	set status = ATM.Update(currencyOut, amountOut, currencyIn, amountIn)
 	do $$$AssertStatusNotOK(status, $system.Status.GetErrorText(status))
-	set currentEuros = ATM.CurrencyBalances.GetAt("EUR")
-	set currentDollars = ATM.CurrencyBalances.GetAt("USD")
-	do $$$AssertEquals(currentEuros, euros, "Outgoing currency remains the same")
-	do $$$AssertEquals(currentDollars, dollars, "Incoming currency remains the same")
+	set euros = ATM.CurrencyBalances.GetAt("EUR")
+	set dollars = ATM.CurrencyBalances.GetAt("USD")
+	do $$$AssertEquals(euros, oldEuros, "Outgoing currency remains the same")
+	do $$$AssertEquals(dollars, oldDollars, "Incoming currency remains the same")
 
 	set amountIn  = 100000, amountOut = 100
 	set status = ATM.Update(currencyOut, amountOut, currencyIn, amountIn)
 	do $$$AssertStatusNotOK(status, $system.Status.GetErrorText(status))
-	set currentEuros = ATM.CurrencyBalances.GetAt("EUR")
-	set currentDollars = ATM.CurrencyBalances.GetAt("USD")
-	do $$$AssertEquals(currentEuros, euros, "Outgoing currency remains the same")
-	do $$$AssertEquals(currentDollars, dollars, "Incoming currency remains the same")
+	set euros = ATM.CurrencyBalances.GetAt("EUR")
+	set dollars = ATM.CurrencyBalances.GetAt("USD")
+	do $$$AssertEquals(euros, oldEuros, "Outgoing currency remains the same")
+	do $$$AssertEquals(dollars, oldDollars, "Incoming currency remains the same")
 
 	set amountIn = 100
 	set status = ATM.Update(currencyOut, amountOut, currencyIn, amountIn)
 	do $$$AssertStatusOK(status, "ATM updated")
-	set currentEuros = ATM.CurrencyBalances.GetAt("EUR")
-	set currentDollars = ATM.CurrencyBalances.GetAt("USD")
-	set euros = euros - amountOut, dollars = dollars + amountIn
-	do $$$AssertEquals(currentEuros, euros, "Outgoing currency updated correctly")
-	do $$$AssertEquals(currentDollars, dollars, "Incoming currency updated correctly")
+	set euros = ATM.CurrencyBalances.GetAt("EUR")
+	set dollars = ATM.CurrencyBalances.GetAt("USD")
+	set oldEuros = oldEuros - amountOut, oldDollars = oldDollars + amountIn
+	do $$$AssertEquals(euros, oldEuros, "Outgoing currency updated correctly")
+	do $$$AssertEquals(dollars, oldDollars, "Incoming currency updated correctly")
 
 	set amountOut = 20
 	set status = ATM.Update(currencyOut, amountOut)
 	do $$$AssertStatusOK(status, "Outgoing-only currency allowed (credit card or account payment)")
-	set currentEuros = ATM.CurrencyBalances.GetAt("EUR")
-	set currentDollars = ATM.CurrencyBalances.GetAt("USD")
-	set euros = euros - amountOut
-	do $$$AssertEquals(currentEuros, euros, "Outgoing currency updated correctly")
-	do $$$AssertEquals(currentDollars, dollars, "Incoming currency remains the same")
+	set euros = ATM.CurrencyBalances.GetAt("EUR")
+	set dollars = ATM.CurrencyBalances.GetAt("USD")
+	set oldEuros = oldEuros - amountOut
+	do $$$AssertEquals(euros, oldEuros, "Outgoing currency updated correctly")
+	do $$$AssertEquals(dollars, oldDollars, "Incoming currency remains the same")
 
 	set amountIn = 20
 	set status = ATM.Update(,,currencyIn, amountIn)
 	do $$$AssertStatusOK(status, "Incoming-only currency allowed (crediting account balance)")
-	set currentEuros = ATM.CurrencyBalances.GetAt("EUR")
-	set currentDollars = ATM.CurrencyBalances.GetAt("USD")
-	set dollars = dollars + amountIn
-	do $$$AssertEquals(currentEuros, euros, "Outgoing currency remains the same")
-	do $$$AssertEquals(currentDollars, dollars, "Incoming currency updated correctly")
+	set euros = ATM.CurrencyBalances.GetAt("EUR")
+	set dollars = ATM.CurrencyBalances.GetAt("USD")
+	set oldDollars = oldDollars + amountIn
+	do $$$AssertEquals(euros, oldEuros, "Outgoing currency remains the same")
+	do $$$AssertEquals(dollars, oldDollars, "Incoming currency updated correctly")
 }
 
 /// test FCE.Branch.Update()
@@ -453,14 +456,14 @@ Method TestUpdateBranch()
 {
 	// create branch
 	set branch = ##class(FCE.Branch).%New()
-	set dollars = 50
-	do branch.CurrencyBalances.SetAt(dollars,"USD")
+	set oldDollars = 50
+	do branch.CurrencyBalances.SetAt(oldDollars,"USD")
 	set currencyIn  = "USD", amountIn    = 100
 	set status = branch.Update(currencyIn, amountIn)
 	do $$$AssertStatusOK(status, "Branch updated")
-	set currentDollars = branch.CurrencyBalances.GetAt("USD")
-	set dollars = dollars + amountIn
-	do $$$AssertEquals(currentDollars, dollars, "Incoming currency updated")
+	set dollars = branch.CurrencyBalances.GetAt("USD")
+	set oldDollars = oldDollars + amountIn
+	do $$$AssertEquals(dollars, oldDollars, "Incoming currency updated")
 }
 
 }

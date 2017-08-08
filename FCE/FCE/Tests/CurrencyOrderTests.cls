@@ -145,7 +145,7 @@ Method TestProcessOrder()
 	do $$$AssertStatusNotOK(status, "Order #4 processed and saved, but has a problem")
 	do $$$AssertEquals(order4.Status, "Problem", "Order #4's Status=Problem")
 	do $$$AssertEquals(message4, "", "Message not returned")
-	&sql(select verificationID from FCE.Payment where ID = :paymentID)
+	&sql(select verificationID from FCE.Payment where ID = :payment4ID)
 	do $$$AssertEquals(SQLCODE, 100, "Rollback deleted order #4 saved payment")
 
 	// delete orders and payments
@@ -177,11 +177,7 @@ Method TestCOTrigger()
 	set ATM = ##class(FCE.ATM).%New()
 	do ATM.CurrencyBalances.SetAt(250, "EUR")
 	do ATM.CurrencyBalances.SetAt(50, "USD")
-	set order = ##class(FCE.CurrencyOrder).%New()
-	set order.CurrencyOut = "EUR"
-	set order.AmountOut = 95
-	set order.CurrencyIn = "USD"
-	set order.AmountIn = 100
+	set order = ##class(FCE.CurrencyOrder).%New("EUR", 95, "USD", 100)
 	set order.Requestor = "Smith,John"
 	set order.RequestorEmail = "Smith@abcd.com"
 	set order.ATM = ATM
@@ -200,9 +196,9 @@ Method TestCOTrigger()
 	do $$$AssertTrue((found '= -1), "ATM notes contain an ""update"" entry")
 	
 	// delete order
-	set orderID = order.%Id()
-	&sql(delete fce.currencyorder where ID = :orderID)
-	do $$$AssertEquals(SQLCODE, 0, "Order deleted")
+	set id = order.%Id()
+	&sql(delete fce.currencyorder where ID = :id)
+	do $$$AssertStatusOK(status, "Order deleted")
 
 	set length2 = atmNotes.Size
 	do $$$AssertTrue(length2 > length1, "ATM Notes got longer again")
