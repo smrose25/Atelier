@@ -19,20 +19,39 @@ Property Opens As %Time(MAXVAL = "$ztimeh(""12:00n"")", MINVAL = "$ztimeh(""6:00
 Property Closes As %Time(MAXVAL = "$ztimeh(""10:00pm"")", MINVAL = "$ztimeh(""1:00pm"")");
 
 /// Currency used by this branch's nation
-Property NationalCurrency As FCE.Currency [ InitialExpression = "USD" ];
+Property NationalCurrency As FCE.CurrencyName [ InitialExpression = "USD" ];
 
-Property CurrencyBalances As array Of %Numeric(MAXVAL = 100000000, MINVAL = 0, POPSPEC = ":5:##class(FCE.CurrencyUtils).Currency()") [ SqlFieldName = Balance ];
+Property CurrencyBalances As array Of %Numeric(MAXVAL = 100000000, MINVAL = 0, POPSPEC = ":5:##class(FCE.Currency).Currency()") [ SqlFieldName = Balance ];
 
 Index CBIndex On CurrencyBalances(KEYS);
 
-Property DurationOpen As %Time [ Calculated, SqlComputeCode = {if ({Closes} '= "") && ({Opens} '= "")
-{set {DurationOpen} = {Closes} - {Opens}}
-else {set {DurationOpen} = ""}}, SqlComputed ];
+Property DurationOpen As %String [ Calculated, SqlComputeCode = {if ({Closes} = "") || ({Opens} = "")
+{set {DurationOpen} = ""}
+else {set {DurationOpen} = $ztime({Closes} - {Opens})}}, SqlComputed ];
 
 Relationship ATMs As FCE.ATM [ Cardinality = children, Inverse = Branch ];
 
+/// create a JSON object from Branch properties
+Method CopyToObject(object As %DynamicObject) As %Status
+{
+	set object.ID = ..%Id()
+	set object.Phone = ..Phone
+	set object.Opens = $ztime(..Opens)
+	set object.Closes = $ztime(..Closes)
+	return $$$OK
+}
+
+/// copy a JSON object into Branch properties
+Method CopyFromObject(object As %DynamicObject) As %Status
+{
+	set ..Phone  = object.Phone
+	set ..Opens = $ztimeh(object.Opens)
+	set ..Closes = $ztimeh(object.Closes)
+	return $$$OK
+}
+
 /// Update Branch by crediting currencies
-Method Update(currencyIn As FCE.Currency, amountIn As %Numeric) As %Status
+Method Update(currencyIn As FCE.CurrencyName, amountIn As %Numeric) As %Status
 {
 	// credit incoming currency by incoming amount
 	set stockAmountIn = ..CurrencyBalances.GetAt(currencyIn)
@@ -52,7 +71,7 @@ Query CurrencySummary() As %SQLQuery [ SqlProc ]
 
 Method %OnValidateObject() As %Status [ Private, ProcedureBlock = 1, ServerOnly = 1 ]
 {
-	return ##class(FCE.CurrencyUtils).CurrencyKeysValidate(..CurrencyBalances)
+	return ##class(FCE.Currency).CurrencyKeysValidate(..CurrencyBalances)
 }
 
 ClassMethod CurrencyReport() [ ReturnResultsets, SqlProc ]
@@ -63,25 +82,6 @@ ClassMethod CurrencyReport() [ ReturnResultsets, SqlProc ]
 	do rs2.%Execute()
 	do %sqlcontext.AddResultSet(rs1)
 	do %sqlcontext.AddResultSet(rs2)
-}
-
-/// create a JSON object from Branch properties
-Method CopyToObject(object as %DynamicObject) as %Status
-{
-	set object.ID = ..%Id()
-	set object.Phone = ..Phone
-	set object.Opens = $ztime(..Opens)
-	set object.Closes = $ztime(..Closes)
-	return $$$OK
-}
-
-/// copy a JSON object into Branch properties
-Method CopyFromObject(object as %DynamicObject) as %Status
-{
-	set ..Phone  = object.Phone
-	set ..Opens = $ztimeh(object.Opens)
-	set ..Closes = $ztimeh(object.Closes)
-	return $$$OK
 }
 
 Storage Default

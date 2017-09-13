@@ -1,7 +1,9 @@
-include %occErrors
-Class FCE.Operations.REST extends %CSP.REST {
+Include %occErrors
 
-XData UrlMap [XMLNamespace = "http://www.intersystems.com/urlmap"]
+Class FCE.Operations.REST Extends %CSP.REST
+{
+
+XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
 {
 <Routes>
 <Route Url="/branches" Method="POST" Call="CreateBranch" />
@@ -10,7 +12,7 @@ XData UrlMap [XMLNamespace = "http://www.intersystems.com/urlmap"]
 </Routes>
 }
 
-ClassMethod RetrieveBranch(branchID as %String) as %Status
+ClassMethod RetrieveBranch(branchID As %String) As %Status
 {
 	set branch = ##class(FCE.Branch).%OpenId(branchID, , .st)
 	if (st = 1) {
@@ -21,7 +23,7 @@ ClassMethod RetrieveBranch(branchID as %String) as %Status
 	return st
 }
 
-ClassMethod CreateBranch() as %Status
+ClassMethod CreateBranch() As %Status
 {
 	#dim %request As %CSP.Request
 	set data = ##class(%DynamicObject).%FromJSON(%request.Content)
@@ -36,7 +38,7 @@ ClassMethod CreateBranch() as %Status
 	return st
 }
 
-ClassMethod DeleteBranch(branchID as %String) as %Status
+ClassMethod DeleteBranch(branchID As %String) As %Status
 {
 	#dim %response As %CSP.Response
 	set st = ##class(FCE.Branch).%DeleteId(branchID)
@@ -46,7 +48,7 @@ ClassMethod DeleteBranch(branchID as %String) as %Status
 
 /// Issue a '500' error and give some indication as to what occurred
 /// (Overridden to interpret some particular %Status values as different HTTP status codes.)
-ClassMethod Http500(ex as %Exception.AbstractException) as %Status
+ClassMethod Http500(ex As %Exception.AbstractException) As %Status
 {
 	set st = ex.AsStatus()
 	set code = +$System.Status.GetErrorCodes(st)
@@ -55,7 +57,6 @@ ClassMethod Http500(ex as %Exception.AbstractException) as %Status
     			$$$DeleteObjectNotFound:..#HTTP404NOTFOUND,
     			$$$AccessDenied        :..#HTTP403FORBIDDEN,
     			                       :..#HTTP500INTERNALSERVERERROR), st)
-
-}
 }
 
+}

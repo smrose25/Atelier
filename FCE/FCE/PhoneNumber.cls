@@ -1,8 +1,6 @@
 Class FCE.PhoneNumber Extends %String
 {
 
-Parameter MAXLEN = 12;
-
 Parameter PATTERN = "3n1""-""3n1""-""4n";
 
 /// Converts the value of <var>%val</var>, which is in logical format, into a display string. Removes all the null characters from the string.

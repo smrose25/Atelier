@@ -6,7 +6,7 @@ Class FCE.AccountHolder Extends FCE.PersistentPerson
 Property Balance As %Numeric(MINVAL = 0);
 
 /// Type of currency that this account holds
-Property Currency As FCE.Currency [ Required ];
+Property Currency As FCE.CurrencyName [ Required ];
 
 /// Exchanges that this customer made
 Relationship CurrencyOrders As FCE.CurrencyOrder [ Cardinality = many, Inverse = AccountHolder ];

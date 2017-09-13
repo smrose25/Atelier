@@ -7,8 +7,8 @@ Property Order As FCE.CurrencyOrder;
 
 Method OnAfterAllTests() As %Status
 {
-	set id = ..Order.%Id()
-	&sql(delete from FCE.CurrencyOrder where ID = :id)
+	set orderID = ..Order.%Id()
+	&sql(delete from FCE.CurrencyOrder where ID = :orderID)
 	&sql(delete from FCE.AccountHolder where Name = 'Smith,John')
 	&sql(delete from FCE.Branch where Phone = '999-999-0000')
 	set ..Order = ""

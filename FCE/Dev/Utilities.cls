@@ -26,6 +26,72 @@ ClassMethod ResetStorage(package As %String)
 	do $system.OBJ.CompilePackage(package,"k")
 }
 
+/// Remove all Population code from classes (call with commit=1 to actually save/recompile the classes)
+ClassMethod RemovePopulation(package As %String, commit As %Boolean = 0) As %Status
+{
+	if ($get(package) = "") {
+		write !, "Please supply package or sub-package name as argument." return $$$OK }
+	if commit {
+		read !, "Changes will be saved and classes recompiled. Continue? No=>", cont
+		return:($case($extract(cont), "Y":0, "y":0, :1)) $$$OK
+	} 
+	
+	set status = $$$OK
+	
+	&sql(declare rempop cursor for
+		 select parent, name from %Dictionary.PropertyDefinition
+		 where parent %STARTSWITH :package and parameters like '%POPSPEC%'
+		 union
+		 select name, null from %Dictionary.ClassDefinition
+		 where name %STARTSWITH :package and super like '%Populate%'
+		 order by parent)
+	&sql(open rempop)
+	for {
+		&sql(fetch rempop into :classname, :propertyname)
+		quit:(SQLCODE '= 0)
+		write !, classname, ?20, propertyname
+		
+		// process superclass list (extends)
+		set class = ##class(%Dictionary.ClassDefinition).%OpenId(classname)
+		set classes(classname) = ""
+		set super = class.Super
+		if (super [ "%Populate") || (super [ "%Library.Populate") {
+			set superList = $listfromstring(super, ",")
+			set loc1 = $listfind(superList, "%Populate")
+			set loc2 = $listfind(superList, "%Library.Populate")
+			set j = 1, superNew = ""
+			for i=1:1:$listlength(superList) {
+				if (i = loc1) || (i = loc2) {  } // skip, do nothing
+				else {
+					set $piece(superNew, ",", j) = $list(superList, i)
+					set j = j + 1
+				}
+			}
+			write ?40, superNew
+			if 'class.SuperIsModified() { set class.Super = superNew }
+		}
+		
+		// process POPSPEC
+		if propertyname '= "" {
+			set property = ##class(%Dictionary.PropertyDefinition).IDKEYOpen(classname,propertyname)
+			do property.Parameters.RemoveAt("POPSPEC") 
+		}
+		
+		// save changes or not?
+		if commit {
+			set stClass = class.%Save()
+			set stProp = property.%Save()
+		}			
+	}
+	&sql(close rempop)
+	
+	// comment in if really ready to recompile classes
+	/* if commit { do $system.OBJ.Compile(.classes, "ck") }
+	else { write ! zw classes } */
+	write ! zw classes
+	quit status
+}
+
 /// Load Person classes (exercise B-1), and update classes programatically using %Dictionary package
 ClassMethod LoadConfigPerson(directory As %String = "c:\Foundations\PersonOnly.xml")
 {

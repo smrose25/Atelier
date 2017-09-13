@@ -1,5 +1,3 @@
-Include %occErrors
-
 /// ATMs belonging to a branch.
 Class FCE.ATM Extends (%Persistent, %Populate, %XML.Adaptor)
 {
@@ -10,12 +8,12 @@ Property Address As FCE.RealEstate;
 
 ForeignKey RealEstateFK(Address) References FCE.RealEstate() [ OnDelete = setnull ];
 
-Property CurrencyBalances As array Of %Numeric(MAXVAL = 10000, MINVAL = 0, POPSPEC = ":5:##class(FCE.CurrencyUtils).Currency()") [ SqlFieldName = Balance ];
+Property CurrencyBalances As array Of %Numeric(MAXVAL = 10000, MINVAL = 0, POPSPEC = ":5:##class(FCE.Currency).Currency()") [ SqlFieldName = Balance ];
 
 Index CBIndex On CurrencyBalances(KEYS);
 
 /// External identification for an ATM
-Property SerialNumber As %String(POPSPEC = "##class(%PopulateUtils).String(5)_##class(%PopulateUtils).String(5)");
+Property SerialNumber As %String(POPSPEC = "##class(%PopulateUtils).String(5)_##class(%PopulateUtils).String(5)") [ Required ];
 
 Index SerialNumberIndex On SerialNumber [ Unique ];
 
@@ -30,7 +28,7 @@ Relationship Orders As FCE.CurrencyOrder [ Cardinality = many, Inverse = ATM ];
 /// * all 4 arguments (cash in - cash out). currencyOut and currencyIn <b>must</b> be different<br>
 /// * the first 2 arguments (cash out only, paid for by credit card or bank account)<br>
 /// * the last 2 arguments (cash in only, to be credited to bank balance)<br>
-Method Update(currencyOut As FCE.Currency = "", amountOut As %Numeric = 0, currencyIn As FCE.Currency = "", amountIn As %Numeric = 0) As %Status
+Method Update(currencyOut As FCE.CurrencyName = "", amountOut As %Numeric = 0, currencyIn As FCE.CurrencyName = "", amountIn As %Numeric = 0) As %Status
 {
 	try {
 		set status = $$$OK
@@ -61,24 +59,37 @@ Method Update(currencyOut As FCE.Currency = "", amountOut As %Numeric = 0, curre
 				throw ex
 			}
 		}
-		
+		// create unforseen <DIVIDE> exception 10% of the time
+		// if '$r(10) {write 1/0}
 	}
 	catch ex {
-		#dim ex as %Exception.StatusException // enable Studio Assist for the exception object
-		// return custom error status
-		if ex.Code = $$$DTMinVal {
-			set status = $$$ERROR($$$GeneralError, "Not enough stock in ATM for " _ currencyOut)
+		#dim ex, exCustom as %Exception.StatusException // enable Studio Assist for the exception objects
+		// return custom error status and also write it to Application Error Log
+		if (ex.Code = $$$ERRORCODE($$$DTMinVal)) {
+			set custom = "Not enough stock in ATM " _ ..SerialNumber _ " for " _ currencyOut
+			set status = $$$ERROR($$$GeneralError, custom)
+			set exCustom = ##class(%Exception.StatusException).CreateFromStatus(status)
+			do exCustom.Log()
 		}
-		elseif ex.Code = $$$DTMaxVal {
-			set status = $$$ERROR($$$GeneralError, "ATM has no more room for " _ currencyIn)
+		elseif (ex.Code = $$$ERRORCODE($$$DTMaxVal)) {
+			set custom = "ATM " _ ..SerialNumber _ " has no more room for " _ currencyIn
+			set status = $$$ERROR($$$GeneralError, custom)
+			set exCustom = ##class(%Exception.StatusException).CreateFromStatus(status)
+			do exCustom.Log()
 		}
 		// or change unforeseen exception back into a status
 		else {
 			set status = ex.AsStatus()
+			do ex.Log()
 		}
 		// reset currencyIn and currencyOut
 		do:outChanged ..CurrencyBalances.SetAt(stockAmountOut, currencyOut)
 		do:inChanged ..CurrencyBalances.SetAt(stockAmountIn, currencyIn)
+		
+		// write to console log, optionally triggering notification
+		set consoleMsg = "ATM " _ ..SerialNumber _ " Stock Problem - Check Error Log for details: "
+		set portalLink = "http://localhost:57772/csp/sys/op/UtilSysAppErrorNamespaces.csp"
+		do ##class(%SYS.System).WriteToConsoleLog(consoleMsg _ portalLink, , 2)
 	}
 	return status
 }
@@ -139,7 +150,7 @@ ClassMethod ATMsInACity(city As %String, state As %String) As %Status
 
 Method %OnValidateObject() As %Status [ Private, ProcedureBlock = 1, ServerOnly = 1 ]
 {
-	return ##class(FCE.CurrencyUtils).CurrencyKeysValidate(..CurrencyBalances)
+	return ##class(FCE.Currency).CurrencyKeysValidate(..CurrencyBalances)
 }
 
 Storage Default

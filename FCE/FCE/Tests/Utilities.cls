@@ -1,10 +1,14 @@
 /// Utilities for development
-Class FCE.Tests.Utilities
+Class FCE.Tests.Utilities [ CompileAfter = FCE.Currency ]
 {
 
 /// Delete all data and run tests
 ClassMethod DestroyAll()
 {
+	// if there's no data in FCE.Currency run FetchRates()
+	&sql(select count(*) into :count from FCE.Currency)
+	do:(count '= 10) ##class(FCE.Currency).FetchRates()
+
 	do ##class(FCE.CurrencyOrder).%KillExtent()
 	do ##class(FCE.Branch).%DeleteExtent()  // also deletes FCE.ATM Notes stream data
 	do ##class(FCE.RealEstate).%KillExtent()
@@ -25,6 +29,10 @@ ClassMethod DestroyAll()
 /// Create data and run tests
 ClassMethod CreateAll(base As %Integer = 5)
 {
+	// if there's no data in FCE.Currency run FetchRates()
+	&sql(select count(*) into :count from FCE.Currency)
+	do:(count '= 10) ##class(FCE.Currency).FetchRates()
+
 	do ##class(FCE.RealEstate).Populate(base * 10)
 	// assigns real estate objects to new branches and ATMs
 	do ##class(FCE.Branch).Populate(base)
@@ -52,6 +60,7 @@ ClassMethod CreateOrder() As FCE.CurrencyOrder
 	set currencyIn            = "USD"
 	set amountIn              = 100
 	set ATM = ##class(FCE.ATM).%New()
+	set ATM.SerialNumber = ##class(%PopulateUtils).String(5)_##class(%PopulateUtils).String(5)
 	do ATM.CurrencyBalances.SetAt(250,"EUR")
 	do ATM.CurrencyBalances.SetAt(50,"USD")
 	set order = ##class(FCE.CurrencyOrder).%New(currencyOut,

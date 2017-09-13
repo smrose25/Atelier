@@ -6,15 +6,6 @@ Class FCE.Operations.ATM
 
 Parameter FEERATE = .025;
 
-/// Calculate Exchange Rate
-/// generates a random value from .1 to 2
-/// will be replaced with a lookup
-ClassMethod GetExchangeRate(currencyOut As FCE.Currency, currencyIn As FCE.Currency) As %Decimal [ SqlProc ]
-{
-	set rate = (($random(20) / 10) + .1)
-	return rate
-}
-
 /// Perform calculations for a request
 ClassMethod GetAmountOutAndFee(amountIn As %Numeric, exchangeRate As %Decimal, Output fee As %Numeric, Output amountOut As %Numeric) As %Status [ SqlProc ]
 {
@@ -26,9 +17,9 @@ ClassMethod GetAmountOutAndFee(amountIn As %Numeric, exchangeRate As %Decimal, O
 /// Process initial request
 /// Do calculations, validate request
 /// Return order linked to ATM
-ClassMethod ProcessRequest(orderATM As FCE.ATM, requestor As %String, requestorEmail As %String, currencyOut As FCE.Currency, currencyIn As FCE.Currency, amountIn As %Numeric) As FCE.CurrencyOrder
+ClassMethod ProcessRequest(orderATM As FCE.ATM, requestor As %String, requestorEmail As %String, currencyOut As FCE.CurrencyName, currencyIn As FCE.CurrencyName, amountIn As %Numeric) As FCE.CurrencyOrder
 {
-	set exchangeRate = ..GetExchangeRate(currencyOut, currencyIn)
+	set exchangeRate = ##class(FCE.Currency).ComputeRate(currencyOut, currencyIn)
 	do ..GetAmountOutAndFee(amountIn, exchangeRate, .fee, .amountOut) // using pass by reference
 	set stockAmountOut = orderATM.CurrencyBalances.GetAt(currencyOut)
 	// check stock here, even though Update has the check also
