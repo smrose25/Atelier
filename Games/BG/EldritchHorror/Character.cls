@@ -1,17 +1,30 @@
 Class BG.EldritchHorror.Character Extends %Persistent
 {
+
 Property Name As %String;
 
-Index NameIndex on Name [Unique];
+Index NameIndex On Name [ Unique ];
 
-classMethod InsertCharacter(name as %String) As %Status
+ClassMethod InsertCharacter(name As %String) As %Status
 {
 	set char = ##class(Character).%New()
 	set char.Name = name
 	return char.%Save()
 }
 
-ClassMethod GetCharactersArray(Output st as %Status) As %DynamicArray
+ClassMethod UpdateCharacter(oldName, newName) As %Status
+{
+	&sql(update "character" set name = :newName where name = :oldName)
+	
+	if SQLCODE = 0 {
+		return $$$OK
+	}
+	else {
+		return $$$ERROR($$$GeneralError, %msg)
+	}
+}
+
+ClassMethod GetCharactersArray(Output st As %Status) As %DynamicArray
 {
 	set arr = []
 
@@ -30,7 +43,7 @@ ClassMethod GetCharactersArray(Output st as %Status) As %DynamicArray
 	return arr
 }
 
-Query CharactersByName() As %SQLQuery [SqlProc]
+Query CharactersByName() As %SQLQuery [ SqlProc ]
 {
 Select Name
 from "Character"

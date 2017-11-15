@@ -3,11 +3,11 @@ Class BG.EldritchHorror.Session Extends (BG.Session, %Persistent)
 
 Property AncientOne As AncientOne;
 
-Index AncientOneIndex on AncientOne;
+Index AncientOneIndex On AncientOne;
 
 Property Won As %Boolean;
 
-Index WonIndex on Won [Type = bitmap ];
+Index WonIndex On Won [ Type = bitmap ];
 
 Property Doom As %Integer;
 
@@ -17,7 +17,7 @@ Property Monsters As %Integer;
 
 Property MysteriesSolved As %Integer;
 
-ClassMethod GetAllSessionsArray(Output st as %Status) As %DynamicArray
+ClassMethod GetAllSessionsArray(Output st As %Status) As %DynamicArray
 {
 	set arr = []
 
@@ -34,8 +34,12 @@ ClassMethod GetAllSessionsArray(Output st as %Status) As %DynamicArray
 			set obj.id = rs.ID
 			set obj.ancientOne = rs.AncientOne
 			set obj.date = rs.SessionDate
-			set obj.won = rs.Won
-			
+			if rs.Won = 1 {
+				set obj.won = "Yes"
+			}
+			else {
+				set obj.won = "No"
+			}
 			do arr.%Push(obj)
 		}
 	}
@@ -43,7 +47,7 @@ ClassMethod GetAllSessionsArray(Output st as %Status) As %DynamicArray
 	return arr
 }
 
-ClassMethod GetSessionObject(sessionId as %String, Output st as %Status) as %DynamicObject
+ClassMethod GetSessionObject(sessionId As %String, Output st As %Status) As %DynamicObject
 {
 	set obj = {}
 
@@ -58,7 +62,12 @@ ClassMethod GetSessionObject(sessionId as %String, Output st as %Status) as %Dyn
 		
 		set obj.ancientOne = rs.AncientOne
 		set obj.date = rs.SessionDate
-		set obj.won = rs.Won
+		if rs.Won = 1 {
+				set obj.won = "Yes"
+			}
+			else {
+				set obj.won = "No"
+			}
 		set obj.doom = rs.Doom
 		set obj.gates = rs.Gates
 		set obj.monsters = rs.Monsters
@@ -68,14 +77,41 @@ ClassMethod GetSessionObject(sessionId as %String, Output st as %Status) as %Dyn
 	return obj
 }
 
-Query AllSessions() As %SQLQuery [SqlProc]
+ClassMethod InsertSession(aOne, won, doom, gates, monsters, mysteries, date, Output Id) As %Status
+{
+	set session = ##class(BG.EldritchHorror.Session).%New()
+	
+	set session.AncientOne = ##class(BG.EldritchHorror.AncientOne).NameIndexOpen(aOne)
+	if won = "Yes" {
+		set session.Won = 1
+	}
+	else {
+		set session.Won = 0
+	}
+	
+	set session.Doom = doom
+	set session.Gates = gates
+	set session.Monsters = monsters
+	set session.MysteriesSolved = mysteries
+	
+	set session.SessionDate = date
+	set session.Game = ##class(BG.Game).TitleIndexOpen("Eldritch Horror")
+	
+	set st = session.%Save()
+	
+	set Id = session.%Id()
+	
+	return st
+}
+
+Query AllSessions() As %SQLQuery [ SqlProc ]
 {
 Select %ID, AncientOne->name as AncientOne, %external(SessionDate) as sessiondate, Won
 from Session
 order by SessionDate
 }
 
-Query SessionById(id) As %SQLQuery [SqlProc]
+Query SessionById(id) As %SQLQuery [ SqlProc ]
 {
 	Select AncientOne->name as AncientOne, %external(SessionDate) as sessiondate, Won, Doom, Gates, Monsters, MysteriesSolved
 	from Session

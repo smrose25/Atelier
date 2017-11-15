@@ -1,17 +1,30 @@
-Class BG.EldritchHorror.AncientOne extends %Persistent 
+Class BG.EldritchHorror.AncientOne Extends %Persistent
 {
-Property Name as %String;
 
-Index NameIndex on Name [Unique];
+Property Name As %String;
 
-classMethod InsertAncientOne(name as %String) As %Status
+Index NameIndex On Name [ Unique ];
+
+ClassMethod InsertAncientOne(name As %String) As %Status
 {
 	set ancientOne = ##class(AncientOne).%New()
 	set ancientOne.Name = name
 	return ancientOne.%Save()
 }
 
-ClassMethod GetAncientOnesArray(Output st as %Status) As %DynamicArray
+ClassMethod UpdateAncientOne(oldName, newName) As %Status
+{
+	&sql(update ancientone set name = :newName where name = :oldName)
+	
+	if SQLCODE = 0 {
+		return $$$OK
+	}
+	else {
+		return $$$ERROR($$$GeneralError, %msg)
+	}
+}
+
+ClassMethod GetAncientOnesArray(Output st As %Status) As %DynamicArray
 {
 	set arr = []
 
@@ -30,7 +43,7 @@ ClassMethod GetAncientOnesArray(Output st as %Status) As %DynamicArray
 	return arr
 }
 
-Query AncientOnesByName() As %SQLQuery [SqlProc]
+Query AncientOnesByName() As %SQLQuery [ SqlProc ]
 {
 Select Name
 from AncientOne

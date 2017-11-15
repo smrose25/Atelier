@@ -1,13 +1,13 @@
-Class BG.Game extends %Persistent 
+Class BG.Game Extends %Persistent
 {
-Property Title As %String(MAXLEN=256);
 
-Index TitleIndex on Title [Unique ];
+Property Title As %String(MAXLEN = 256);
+
+Index TitleIndex On Title [ Unique ];
 
 Property Cooperative As %Boolean;
 
-
-classMethod InsertGame(title as %String, coop as %Boolean) As %Status
+ClassMethod InsertGame(title As %String, coop As %Boolean) As %Status
 {
 	set game = ##class(BG.Game).%New()
 	set game.Title = title
@@ -16,7 +16,7 @@ classMethod InsertGame(title as %String, coop as %Boolean) As %Status
 	return game.%Save()
 }
 
-ClassMethod GetGamesArray(Output st as %Status) As %DynamicArray
+ClassMethod GetGamesArray(Output st As %Status) As %DynamicArray
 {
 	set arr = []
 
@@ -38,13 +38,12 @@ ClassMethod GetGamesArray(Output st as %Status) As %DynamicArray
 	return arr
 }
 
-Query GamesByTitle() As %SQLQuery [SqlProc]
+Query GamesByTitle() As %SQLQuery [ SqlProc ]
 {
 Select Title, Cooperative
 from Game
 order by Title
 }
-
 
 Storage Default
 {

@@ -1,21 +1,41 @@
-Class BG.EldritchHorror.SessionCharacter extends %Persistent 
+Class BG.EldritchHorror.SessionCharacter Extends %Persistent
 {
 
 Property Session As BG.EldritchHorror.Session;
 
-Index SessionIndex on Session;
+Index SessionIndex On Session;
 
 Property Character As BG.EldritchHorror.Character;
 
-Index CharacterIndex on Character;
+Index CharacterIndex On Character;
 
 Property Player As BG.Player;
 
-Index PlayerIndex on Player;
+Index PlayerIndex On Player;
 
 Property Survived As %Boolean;
 
-ClassMethod GetCharactersArray(sessionId as %String, Output st as %Status) As %DynamicArray
+ClassMethod InsertSessionCharacter(sessionId, charName, playerName, survived) As %Status
+{
+	set char = ##class(BG.EldritchHorror.SessionCharacter).%New()
+	
+	set char.Player = ##class(BG.Player).NameIndexOpen(playerName)
+	set char.Character = ##class(BG.EldritchHorror.Character).NameIndexOpen(charName)
+	set char.Session = ##class(BG.Session).%OpenId(sessionId)
+	
+	if survived = "Yes" {
+		set char.Survived = 1 
+	}
+	else {
+		set char.Survived = 0
+	}
+	
+	set st = char.%Save()
+	
+	return st
+}
+
+ClassMethod GetCharactersArray(sessionId As %String, Output st As %Status) As %DynamicArray
 {
 	set arr = []
 
@@ -38,7 +58,7 @@ ClassMethod GetCharactersArray(sessionId as %String, Output st as %Status) As %D
 	return arr
 }
 
-Query CharactersBySession(id) As %SQLQuery [SqlProc]
+Query CharactersBySession(id) As %SQLQuery [ SqlProc ]
 {
 Select "character"->name as "Character", player->name as Player, Survived
 from SessionCharacter

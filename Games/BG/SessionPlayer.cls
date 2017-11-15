@@ -1,14 +1,28 @@
-Class BG.SessionPlayer extends %Persistent 
+Class BG.SessionPlayer Extends %Persistent
 {
+
 Property Session As BG.Session;
 
-Index SessionIndex on Session;
+Index SessionIndex On Session;
 
 Property Player As BG.Player;
 
-Index PlayerIndex on Player;
+Index PlayerIndex On Player;
 
-ClassMethod GetPlayersArray(id as %String, Output st as %Status) As %DynamicArray
+ClassMethod InsertSessionPlayer(sessionId, name) As %Status
+{
+	set player = ##class(BG.SessionPlayer).%New()
+	
+	set player.Player = ##class(BG.Player).NameIndexOpen(name)
+	
+	set player.Session = ##class(BG.Session).%OpenId(sessionId)
+	
+	set st = player.%Save()
+	
+	return st
+}
+
+ClassMethod GetPlayersArray(id As %String, Output st As %Status) As %DynamicArray
 {
 	set arr = []
 
@@ -27,7 +41,7 @@ ClassMethod GetPlayersArray(id as %String, Output st as %Status) As %DynamicArra
 	return arr
 }
 
-Query PlayersBySession(id) As %SQLQuery [SqlProc]
+Query PlayersBySession(id) As %SQLQuery [ SqlProc ]
 {
 Select Player->Name
 from SessionPlayer

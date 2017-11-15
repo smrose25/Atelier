@@ -1,5 +1,6 @@
-Class BG.RESTService extends %CSP.REST 
+Class BG.RESTService Extends %CSP.REST
 {
+
 XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
 {
 <Routes>
@@ -31,7 +32,7 @@ ClassMethod GetGames() As %Status
 	return st
 }
 
-ClassMethod InsertGame(title as %String, coop as %Boolean) As %Status
+ClassMethod InsertGame(title As %String, coop As %Boolean) As %Status
 {
 	return ##class(BG.Game).InsertGame(title,coop)
 }

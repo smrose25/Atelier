@@ -1,5 +1,4 @@
-Class BG.Utils 
+Class BG.Utils
 {
-
 
 }

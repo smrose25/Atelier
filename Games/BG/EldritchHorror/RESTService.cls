@@ -1,4 +1,6 @@
-Class BG.EldritchHorror.RESTService extends BG.RESTService {
+Class BG.EldritchHorror.RESTService Extends BG.RESTService
+{
+
 XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
 {
 <Routes>
@@ -86,13 +88,61 @@ ClassMethod GetSession(id) As %Status
 	write sessionObj.%ToJSON()
 	
 	return st
-	
 }
 
 ClassMethod InsertSession() As %Status
 {
+	#Dim %request as %CSP.Request
 	
-	return $$$OK
+	set st = $$$OK
+	try {
+	
+		set json = %request.Content.Read()
+		
+		set data = {}.%FromJSON(json)
+		
+		tstart
+		
+		set aOne = data.ancientone
+		set won = data.won
+		set doom = data.doom
+		set gates = data.gates
+		set monsters = data.monsters
+		set mysteries = data.mysteries
+		set date = data.date
+		
+		set st = ##class(BG.EldritchHorror.Session).InsertSession(aOne,won,doom,gates,monsters,mysteries,date,.Id)
+		$$$ThrowOnError(st)
+		
+		set pIter = data.players.%GetIterator()
+		
+		while pIter.%GetNext(.pKey, .player) {
+			
+			set st = ##class(BG.SessionPlayer).InsertSessionPlayer(Id,player)
+			
+			$$$ThrowOnError(st)
+			
+		}
+		
+		set cIter = data.characters.%GetIterator()
+		
+		while cIter.%GetNext(.cKey, .character) {
+			set char = character.character
+			set player = character.player
+			set survived = character.survived
+			
+			set st = ##class(BG.EldritchHorror.SessionCharacter).InsertSessionCharacter(Id,char,player,survived)
+			$$$ThrowOnError(st)
+		}
+		
+		tcommit
+   }
+   catch ex {
+   		trollback
+   		set st = ex.AsStatus()
+   }
+	
+   return st
 }
 
 }

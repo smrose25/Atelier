@@ -1,17 +1,18 @@
-Class BG.Player extends %Persistent 
+Class BG.Player Extends %Persistent
 {
+
 Property Name As %String;
 
-Index NameIndex on Name [Unique];
+Index NameIndex On Name [ Unique ];
 
-classMethod InsertPlayer(name as %String) As %Status
+ClassMethod InsertPlayer(name As %String) As %Status
 {
 	set player = ##class(Player).%New()
 	set player.Name = name
 	return player.%Save()
 }
 
-ClassMethod GetPlayersArray(Output st as %Status) As %DynamicArray
+ClassMethod GetPlayersArray(Output st As %Status) As %DynamicArray
 {
 	set arr = []
 
@@ -30,7 +31,7 @@ ClassMethod GetPlayersArray(Output st as %Status) As %DynamicArray
 	return arr
 }
 
-Query PlayersByName() As %SQLQuery [SqlProc]
+Query PlayersByName() As %SQLQuery [ SqlProc ]
 {
 Select Name
 from Player

@@ -1,8 +1,9 @@
-Class BG.Session extends %Persistent [Abstract]
+Class BG.Session Extends %Persistent [ Abstract ]
 {
+
 Property Game As BG.Game;
 
-Index GameIndex on Game;
+Index GameIndex On Game;
 
 Property SessionDate As %Date;
 
