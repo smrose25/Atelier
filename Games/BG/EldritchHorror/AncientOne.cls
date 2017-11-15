@@ -7,7 +7,7 @@ Index NameIndex On Name [ Unique ];
 
 ClassMethod InsertAncientOne(name As %String) As %Status
 {
-	set ancientOne = ##class(AncientOne).%New()
+	set ancientOne = ..%New()
 	set ancientOne.Name = name
 	return ancientOne.%Save()
 }
