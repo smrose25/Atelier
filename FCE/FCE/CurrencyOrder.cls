@@ -114,10 +114,10 @@ ClassMethod OrdersByCity(orderStatus As %String = "Pending") As %Status
           from FCE.CurrencyOrder
           where Status = :orderStatus
           order by ATM->Branch->Address->City)
+          
      &sql(open bycity)
+     
      write !, orderStatus, " Orders"
-	 write !, "City", ?20, "Amount In", ?30, "Currency In", ?55, "Amount Out", ?70,
-	              "Currency Out", ?95, "Date Stamp", ?110, "Time Stamp"
      for {
 	     &sql(fetch bycity into :city, :amountIn, :currencyIn, :amountOut,
 	                             :currencyOut, :dateStamp, :timeStamp)
@@ -236,7 +236,7 @@ Storage Default
 </Data>
 <DataLocation>^FCE.CurrencyOrderD</DataLocation>
 <DefaultData>CurrencyOrderDefaultData</DefaultData>
-<ExtentSize>130</ExtentSize>
+<ExtentSize>30</ExtentSize>
 <IdLocation>^FCE.CurrencyOrderD</IdLocation>
 <IndexLocation>^FCE.CurrencyOrderI</IndexLocation>
 <Property name="%%CLASSNAME">
@@ -244,29 +244,29 @@ Storage Default
 <Selectivity>100.0000%</Selectivity>
 </Property>
 <Property name="%%ID">
-<AverageFieldSize>2.31</AverageFieldSize>
+<AverageFieldSize>1.9</AverageFieldSize>
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="ATM">
-<AverageFieldSize>5.54</AverageFieldSize>
-<Selectivity>6.2500%</Selectivity>
+<AverageFieldSize>5.8</AverageFieldSize>
+<Selectivity>7.1429%</Selectivity>
 </Property>
 <Property name="AccountHolder">
-<AverageFieldSize>.52</AverageFieldSize>
-<OutlierSelectivity>.684615:</OutlierSelectivity>
-<Selectivity>2.1026%</Selectivity>
+<AverageFieldSize>.57</AverageFieldSize>
+<OutlierSelectivity>.633333:</OutlierSelectivity>
+<Selectivity>4.0741%</Selectivity>
 </Property>
 <Property name="AmountIn">
-<AverageFieldSize>6.8</AverageFieldSize>
-<Selectivity>0.7692%</Selectivity>
+<AverageFieldSize>6.83</AverageFieldSize>
+<Selectivity>3.3333%</Selectivity>
 </Property>
 <Property name="AmountOut">
-<AverageFieldSize>7.02</AverageFieldSize>
-<Selectivity>0.7692%</Selectivity>
+<AverageFieldSize>7.23</AverageFieldSize>
+<Selectivity>3.3333%</Selectivity>
 </Property>
 <Property name="CurrencyIn">
 <AverageFieldSize>3</AverageFieldSize>
-<Selectivity>10.0000%</Selectivity>
+<Selectivity>11.1111%</Selectivity>
 </Property>
 <Property name="CurrencyOut">
 <AverageFieldSize>3</AverageFieldSize>
@@ -274,45 +274,45 @@ Storage Default
 </Property>
 <Property name="DateStamp">
 <AverageFieldSize>5</AverageFieldSize>
-<Selectivity>0.7692%</Selectivity>
+<Selectivity>3.3333%</Selectivity>
 </Property>
 <Property name="Employee">
-<AverageFieldSize>.32</AverageFieldSize>
-<OutlierSelectivity>.769231:</OutlierSelectivity>
-<Selectivity>1.9231%</Selectivity>
+<AverageFieldSize>.5</AverageFieldSize>
+<OutlierSelectivity>.733333:</OutlierSelectivity>
+<Selectivity>5.3333%</Selectivity>
 </Property>
 <Property name="ExchangeRate">
-<AverageFieldSize>4.61</AverageFieldSize>
-<Selectivity>1.4493%</Selectivity>
+<AverageFieldSize>4.7</AverageFieldSize>
+<Selectivity>3.7037%</Selectivity>
 </Property>
 <Property name="Fee">
-<AverageFieldSize>5.38</AverageFieldSize>
-<Selectivity>0.7813%</Selectivity>
+<AverageFieldSize>5.6</AverageFieldSize>
+<Selectivity>3.3333%</Selectivity>
 </Property>
 <Property name="Payment">
-<AverageFieldSize>2.33</AverageFieldSize>
+<AverageFieldSize>1.93</AverageFieldSize>
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="Requestor">
-<AverageFieldSize>16.07</AverageFieldSize>
-<Selectivity>0.7692%</Selectivity>
+<AverageFieldSize>16.8</AverageFieldSize>
+<Selectivity>3.3333%</Selectivity>
 </Property>
 <Property name="RequestorEmail">
-<AverageFieldSize>4.92</AverageFieldSize>
-<Selectivity>0.7692%</Selectivity>
+<AverageFieldSize>4.97</AverageFieldSize>
+<Selectivity>3.3333%</Selectivity>
 </Property>
 <Property name="Satisfaction">
 <AverageFieldSize>1</AverageFieldSize>
-<Selectivity>20.0000%</Selectivity>
+<Selectivity>25.0000%</Selectivity>
 </Property>
 <Property name="Status">
-<AverageFieldSize>8.55</AverageFieldSize>
-<OutlierSelectivity>.792308:"Completed"</OutlierSelectivity>
-<Selectivity>3.4615%</Selectivity>
+<AverageFieldSize>8.6</AverageFieldSize>
+<OutlierSelectivity>.733333:"Completed"</OutlierSelectivity>
+<Selectivity>6.6667%</Selectivity>
 </Property>
 <Property name="TimeStamp">
-<AverageFieldSize>4.88</AverageFieldSize>
-<Selectivity>0.7692%</Selectivity>
+<AverageFieldSize>4.93</AverageFieldSize>
+<Selectivity>3.3333%</Selectivity>
 </Property>
 <SQLMap name="$CurrencyOrder">
 <BlockCount>-4</BlockCount>
@@ -327,7 +327,7 @@ Storage Default
 <BlockCount>-4</BlockCount>
 </SQLMap>
 <SQLMap name="IDKEY">
-<BlockCount>-8</BlockCount>
+<BlockCount>-4</BlockCount>
 </SQLMap>
 <SQLMap name="InIndex">
 <BlockCount>-4</BlockCount>

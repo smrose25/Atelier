@@ -14,6 +14,7 @@ Property Zip As %String(PATTERN = "5n.1(1""-""4n)") [ Required ];
 
 Method Print()
 {
+
 	write !, ..Street
 	write !, ..City, ", ", ..State, " ", ..Zip
 }

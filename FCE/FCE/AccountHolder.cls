@@ -60,24 +60,24 @@ Storage Default
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="Balance">
-<AverageFieldSize>6.8</AverageFieldSize>
+<AverageFieldSize>6.87</AverageFieldSize>
 <Selectivity>6.6667%</Selectivity>
 </Property>
 <Property name="Currency">
 <AverageFieldSize>3</AverageFieldSize>
-<Selectivity>16.6667%</Selectivity>
+<Selectivity>14.2857%</Selectivity>
 </Property>
 <Property name="DOB">
 <AverageFieldSize>5</AverageFieldSize>
 <Selectivity>6.6667%</Selectivity>
 </Property>
 <Property name="Email">
-<AverageFieldSize>4.73</AverageFieldSize>
+<AverageFieldSize>4.93</AverageFieldSize>
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="Home">
-<AverageFieldSize>37,City:7.27,Street:17.47</AverageFieldSize>
-<Selectivity>6.6667%,City:8.3333%,Street:6.6667%</Selectivity>
+<AverageFieldSize>36.07,City:7.27,State:2,Street:16.4,Zip:5</AverageFieldSize>
+<Selectivity>6.6667%,City:8.3333%,State:25.0000%,Street:6.6667%,Zip:6.6667%</Selectivity>
 </Property>
 <Property name="Name">
 <AverageFieldSize>16.4</AverageFieldSize>
@@ -88,8 +88,8 @@ Storage Default
 <Selectivity>6.6667%</Selectivity>
 </Property>
 <Property name="Work">
-<AverageFieldSize>36.53,City:8,Street:16.13</AverageFieldSize>
-<Selectivity>6.6667%,City:9.0909%,Street:6.6667%</Selectivity>
+<AverageFieldSize>36.07,City:7.6,State:2,Street:16.07,Zip:5</AverageFieldSize>
+<Selectivity>6.6667%,City:9.0909%,State:33.3333%,Street:6.6667%,Zip:6.6667%</Selectivity>
 </Property>
 <SQLMap name="EmailIndex">
 <BlockCount>-4</BlockCount>

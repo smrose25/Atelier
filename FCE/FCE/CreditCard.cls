@@ -54,30 +54,30 @@ Storage Default
 </Value>
 </Data>
 <DefaultData>CreditCardDefaultData</DefaultData>
-<ExtentSize>43</ExtentSize>
+<ExtentSize>11</ExtentSize>
 <Property name="%%CLASSNAME">
 <AverageFieldSize>16</AverageFieldSize>
 <Selectivity>100.0000%</Selectivity>
 </Property>
 <Property name="%%ID">
-<AverageFieldSize>2.19</AverageFieldSize>
+<AverageFieldSize>1.91</AverageFieldSize>
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="ExpirationDate">
 <AverageFieldSize>5</AverageFieldSize>
-<Selectivity>2.3256%</Selectivity>
+<Selectivity>9.0909%</Selectivity>
 </Property>
 <Property name="Number">
 <AverageFieldSize>19</AverageFieldSize>
-<Selectivity>2.3256%</Selectivity>
+<Selectivity>9.0909%</Selectivity>
 </Property>
 <Property name="Type">
-<AverageFieldSize>5.35</AverageFieldSize>
+<AverageFieldSize>4</AverageFieldSize>
 <Selectivity>20.0000%</Selectivity>
 </Property>
 <Property name="VerificationID">
-<AverageFieldSize>4.95</AverageFieldSize>
-<Selectivity>2.3256%</Selectivity>
+<AverageFieldSize>5</AverageFieldSize>
+<Selectivity>9.0909%</Selectivity>
 </Property>
 <SQLMap name="$CreditCard">
 <BlockCount>-4</BlockCount>

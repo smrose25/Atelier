@@ -72,7 +72,7 @@ Storage Default
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="City">
-<AverageFieldSize>6.96</AverageFieldSize>
+<AverageFieldSize>7.22</AverageFieldSize>
 <Selectivity>4.3478%</Selectivity>
 </Property>
 <Property name="State">
@@ -80,7 +80,7 @@ Storage Default
 <Selectivity>25.0000%</Selectivity>
 </Property>
 <Property name="Street">
-<AverageFieldSize>16.76</AverageFieldSize>
+<AverageFieldSize>16.62</AverageFieldSize>
 <Selectivity>2.0000%</Selectivity>
 </Property>
 <Property name="Zip">

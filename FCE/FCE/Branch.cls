@@ -125,7 +125,7 @@ Storage Default
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="Address">
-<AverageFieldSize>2</AverageFieldSize>
+<AverageFieldSize>1.8</AverageFieldSize>
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="Closes">

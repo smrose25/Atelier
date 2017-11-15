@@ -37,10 +37,13 @@ Method Update(currencyOut As FCE.CurrencyName = "", amountOut As %Numeric = 0, c
 		// debit stock amount by amount taken out
 		if (currencyOut '= "") && (amountOut > 0) {
 			set outChanged = 1
+			
 			set stockAmountOut = ..CurrencyBalances.GetAt(currencyOut)
 			set debitedAmountOut = stockAmountOut - amountOut
 			do ..CurrencyBalances.SetAt(debitedAmountOut, currencyOut)
+			
 			set status = ..%ValidateObject()
+			
 			if $$$ISERR(status) {
 				set ex = ##class(%Exception.StatusException).CreateFromStatus(status)
 				throw ex
@@ -66,14 +69,18 @@ Method Update(currencyOut As FCE.CurrencyName = "", amountOut As %Numeric = 0, c
 		#dim ex, exCustom as %Exception.StatusException // enable Studio Assist for the exception objects
 		// return custom error status and also write it to Application Error Log
 		if (ex.Code = $$$ERRORCODE($$$DTMinVal)) {
+			
 			set custom = "Not enough stock in ATM " _ ..SerialNumber _ " for " _ currencyOut
 			set status = $$$ERROR($$$GeneralError, custom)
+			
 			set exCustom = ##class(%Exception.StatusException).CreateFromStatus(status)
 			do exCustom.Log()
 		}
 		elseif (ex.Code = $$$ERRORCODE($$$DTMaxVal)) {
+			
 			set custom = "ATM " _ ..SerialNumber _ " has no more room for " _ currencyIn
 			set status = $$$ERROR($$$GeneralError, custom)
+			
 			set exCustom = ##class(%Exception.StatusException).CreateFromStatus(status)
 			do exCustom.Log()
 		}
@@ -82,14 +89,18 @@ Method Update(currencyOut As FCE.CurrencyName = "", amountOut As %Numeric = 0, c
 			set status = ex.AsStatus()
 			do ex.Log()
 		}
-		// reset currencyIn and currencyOut
-		do:outChanged ..CurrencyBalances.SetAt(stockAmountOut, currencyOut)
-		do:inChanged ..CurrencyBalances.SetAt(stockAmountIn, currencyIn)
 		
+		// reset currencyIn and currencyOut
+		if (outChanged) {
+			do ..CurrencyBalances.SetAt(stockAmountOut, currencyOut)
+		}
+		if (inChanged) {
+			do ..CurrencyBalances.SetAt(stockAmountIn, currencyIn)
+		}
 		// write to console log, optionally triggering notification
-		set consoleMsg = "ATM " _ ..SerialNumber _ " Stock Problem - Check Error Log for details: "
-		set portalLink = "http://localhost:57772/csp/sys/op/UtilSysAppErrorNamespaces.csp"
-		do ##class(%SYS.System).WriteToConsoleLog(consoleMsg _ portalLink, , 2)
+		//set consoleMsg = "ATM " _ ..SerialNumber _ " Stock Problem - Check Error Log for details: "
+		//set portalLink = "http://localhost:57772/csp/sys/op/UtilSysAppErrorNamespaces.csp"
+		//do ##class(%SYS.System).WriteToConsoleLog(consoleMsg _ portalLink, , 2)
 	}
 	return status
 }
@@ -117,8 +128,13 @@ ClassMethod CitiesStatesList() As %Status
 {
 	set resultSet = ##class(%ResultSet).%New("FCE.ATM:CitiesStates")
 	set status = resultSet.%Execute()
+	
+	if $$$ISERR(status) {
+		return status
+	}
+	
 	while resultSet.%Next() {
-		write !, resultSet.City, ?25, resultSet.State
+		write !, resultSet.City, ", ", resultSet.State
 	}
 	do resultSet.%Close()
 	return $$$OK
@@ -188,12 +204,12 @@ Storage Default
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="Address">
-<AverageFieldSize>1.87</AverageFieldSize>
+<AverageFieldSize>1.93</AverageFieldSize>
 <Selectivity>7.1429%</Selectivity>
 </Property>
 <Property name="Branch">
 <AverageFieldSize>2</AverageFieldSize>
-<Selectivity>25.0000%</Selectivity>
+<Selectivity>20.0000%</Selectivity>
 </Property>
 <Property name="Notes">
 <Selectivity>100.0000%</Selectivity>

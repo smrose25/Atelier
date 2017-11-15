@@ -6,7 +6,7 @@ Class FCE.Currency Extends %Persistent [ DependsOn = FCE.CurrencyName ]
 Parameter ABBREVIATIONS = {##class(FCE.CurrencyName).#VALUELIST};
 
 /// access key for apilayer.net, for InterSystems training use ONLY!
-Parameter ACCESSKEY;
+Parameter ACCESSKEY = "0017046a49714ee66280c0dd4517564c";
 
 /// default rates in case call to apilayer.net fails
 Parameter DEFAULTRATES = "{""USDEUR"":1,""USDINR"":65,""USDVEF"":10,""USDJPY"":110,""USDMXN"":20,""USDZAR"":15,""USDBRL"":3,""USDCAD"":1,""USDRUB"":60}";

@@ -47,24 +47,24 @@ Storage Default
 <Selectivity>6.6667%</Selectivity>
 </Property>
 <Property name="Email">
-<AverageFieldSize>17</AverageFieldSize>
+<AverageFieldSize>16.93</AverageFieldSize>
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="Home">
-<AverageFieldSize>37.73,City:7.2,Street:18.07</AverageFieldSize>
-<Selectivity>6.6667%,City:8.3333%,Street:6.6667%</Selectivity>
+<AverageFieldSize>36.6,City:6.53,State:2,Street:17.67,Zip:5</AverageFieldSize>
+<Selectivity>6.6667%,City:8.3333%,State:25.0000%,Street:6.6667%,Zip:6.6667%</Selectivity>
 </Property>
 <Property name="Name">
-<AverageFieldSize>17.6</AverageFieldSize>
+<AverageFieldSize>15.8</AverageFieldSize>
 <Selectivity>6.6667%</Selectivity>
 </Property>
 <Property name="PrintName">
-<AverageFieldSize>17.6</AverageFieldSize>
+<AverageFieldSize>15.8</AverageFieldSize>
 <Selectivity>6.6667%</Selectivity>
 </Property>
 <Property name="Work">
-<AverageFieldSize>36.8,City:7,Street:17.67</AverageFieldSize>
-<Selectivity>6.6667%,City:9.0909%,Street:6.6667%</Selectivity>
+<AverageFieldSize>36.67,City:7.07,State:2,Street:17.13,Zip:5</AverageFieldSize>
+<Selectivity>6.6667%,City:7.6923%,State:25.0000%,Street:6.6667%,Zip:6.6667%</Selectivity>
 </Property>
 <SQLMap name="EmailIndex">
 <BlockCount>-4</BlockCount>

@@ -27,18 +27,18 @@ Method Process(order As FCE.CurrencyOrder, Output cashPaymentString As %String =
 
 Storage Default
 {
-<ExtentSize>44</ExtentSize>
+<ExtentSize>6</ExtentSize>
 <Property name="%%CLASSNAME">
 <AverageFieldSize>10</AverageFieldSize>
 <Selectivity>100.0000%</Selectivity>
 </Property>
 <Property name="%%ID">
-<AverageFieldSize>2.41</AverageFieldSize>
+<AverageFieldSize>1.83</AverageFieldSize>
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="VerificationID">
-<AverageFieldSize>4.86</AverageFieldSize>
-<Selectivity>2.2727%</Selectivity>
+<AverageFieldSize>4.83</AverageFieldSize>
+<Selectivity>16.6667%</Selectivity>
 </Property>
 <SQLMap name="$Cash">
 <BlockCount>-4</BlockCount>
