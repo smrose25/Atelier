@@ -62,8 +62,7 @@ Method Update(currencyOut As FCE.CurrencyName = "", amountOut As %Numeric = 0, c
 				throw ex
 			}
 		}
-		// create unforseen <DIVIDE> exception 10% of the time
-		// if '$r(10) {write 1/0}
+		
 	}
 	catch ex {
 		#dim ex, exCustom as %Exception.StatusException // enable Studio Assist for the exception objects
