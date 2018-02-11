@@ -22,13 +22,7 @@ ClassMethod InsertSessionCharacter(sessionId, charName, playerName, survived) As
 	set char.Player = ##class(BG.Player).NameIndexOpen(playerName)
 	set char.Character = ##class(BG.EldritchHorror.Character).NameIndexOpen(charName)
 	set char.Session = ##class(BG.Session).%OpenId(sessionId)
-	
-	if survived = "Yes" {
-		set char.Survived = 1 
-	}
-	else {
-		set char.Survived = 0
-	}
+	set char.Survived = survived
 	
 	set st = char.%Save()
 	
@@ -50,7 +44,12 @@ ClassMethod GetCharactersArray(sessionId As %String, Output st As %Status) As %D
 			set obj = {}
 			set obj.player = rs.Player
 			set obj.character = rs.Character
-			set obj.survived = rs.Survived
+			if rs.Survived = 1 {
+				set obj.survived = "Yes"
+			}
+			else {
+				set obj.survived = "No"
+			}
 			do arr.%Push(obj)
 		}
 	}
@@ -63,7 +62,7 @@ Query CharactersBySession(id) As %SQLQuery [ SqlProc ]
 Select "character"->name as "Character", player->name as Player, Survived
 from SessionCharacter
 where session = :id
-order by "character"
+order by player
 }
 
 Storage Default

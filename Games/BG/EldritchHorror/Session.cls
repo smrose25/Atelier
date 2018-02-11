@@ -17,6 +17,8 @@ Property Monsters As %Integer;
 
 Property MysteriesSolved As %Integer;
 
+Property RumoursSolved as %Integer;
+
 ClassMethod GetAllSessionsArray(Output st As %Status) As %DynamicArray
 {
 	set arr = []
@@ -72,27 +74,25 @@ ClassMethod GetSessionObject(sessionId As %String, Output st As %Status) As %Dyn
 		set obj.gates = rs.Gates
 		set obj.monsters = rs.Monsters
 		set obj.mysteriessolved = rs.MysteriesSolved
+		set obj.rumourssolved = rs.RumoursSolved
 	}
 	
 	return obj
 }
 
-ClassMethod InsertSession(aOne, won, doom, gates, monsters, mysteries, date, Output Id) As %Status
+ClassMethod InsertSession(aOne, won, doom, gates, monsters, mysteries, rumours,date, Output Id) As %Status
 {
 	set session = ##class(BG.EldritchHorror.Session).%New()
 	
 	set session.AncientOne = ##class(BG.EldritchHorror.AncientOne).NameIndexOpen(aOne)
-	if won = "Yes" {
-		set session.Won = 1
-	}
-	else {
-		set session.Won = 0
-	}
+	
+	set session.Won = won
 	
 	set session.Doom = doom
 	set session.Gates = gates
 	set session.Monsters = monsters
 	set session.MysteriesSolved = mysteries
+	set session.RumoursSolved = rumours
 	
 	set session.SessionDate = date
 	set session.Game = ##class(BG.Game).TitleIndexOpen("Eldritch Horror")
@@ -113,7 +113,7 @@ order by SessionDate
 
 Query SessionById(id) As %SQLQuery [ SqlProc ]
 {
-	Select AncientOne->name as AncientOne, %external(SessionDate) as sessiondate, Won, Doom, Gates, Monsters, MysteriesSolved
+	Select AncientOne->name as AncientOne, %external(SessionDate) as sessiondate, Won, Doom, Gates, Monsters, MysteriesSolved, RumoursSolved
 	from Session
 	where id = :id
 }
@@ -139,6 +139,9 @@ Storage Default
 </Value>
 <Value name="6">
 <Value>MysteriesSolved</Value>
+</Value>
+<Value name="7">
+<Value>RumoursSolved</Value>
 </Value>
 </Data>
 <DefaultData>SessionDefaultData1</DefaultData>

@@ -96,7 +96,7 @@ ClassMethod InsertSession() As %Status
 	
 	set st = $$$OK
 	try {
-	
+
 		set json = %request.Content.Read()
 		
 		set data = {}.%FromJSON(json)
@@ -104,19 +104,29 @@ ClassMethod InsertSession() As %Status
 		tstart
 		
 		set aOne = data.ancientone
+		
+		set aOne = $replace(aOne, "\n","")
+		set aOne = $zstrip(aOne, ">W")
+		set aOne = $zstrip(aOne, "*C")
+		
+		set ^test("aOne") = aOne
 		set won = data.won
 		set doom = data.doom
 		set gates = data.gates
 		set monsters = data.monsters
 		set mysteries = data.mysteries
-		set date = data.date
+		set rumours = data.rumours
+		set date = $zdateh(data.date)
 		
-		set st = ##class(BG.EldritchHorror.Session).InsertSession(aOne,won,doom,gates,monsters,mysteries,date,.Id)
+		set st = ##class(BG.EldritchHorror.Session).InsertSession(aOne,won,doom,gates,monsters,mysteries,rumours,date,.Id)
 		$$$ThrowOnError(st)
 		
 		set pIter = data.players.%GetIterator()
 		
 		while pIter.%GetNext(.pKey, .player) {
+			set player = $replace(player, "\n","")
+			set player = $zstrip(player, ">W")
+			set player = $zstrip(player, "*C")
 			
 			set st = ##class(BG.SessionPlayer).InsertSessionPlayer(Id,player)
 			
@@ -130,6 +140,14 @@ ClassMethod InsertSession() As %Status
 			set char = character.character
 			set player = character.player
 			set survived = character.survived
+			
+			set char = $replace(char, "\n","")
+			set char = $zstrip(char, ">W")
+			set char = $zstrip(char, "*C")
+			set player = $replace(player, "\n","")
+			set player = $zstrip(player, ">W")
+			set player = $zstrip(player, "*C")
+			set ^test("char") = char
 			
 			set st = ##class(BG.EldritchHorror.SessionCharacter).InsertSessionCharacter(Id,char,player,survived)
 			$$$ThrowOnError(st)
