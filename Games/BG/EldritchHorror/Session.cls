@@ -1,4 +1,4 @@
-Class BG.EldritchHorror.Session Extends (BG.Session, %Persistent)
+Class BG.EldritchHorror.Session Extends BG.Session
 {
 
 Property AncientOne As AncientOne;
@@ -87,6 +87,9 @@ ClassMethod InsertSession(aOne, won, doom, gates, monsters, mysteries, rumours,d
 	set session.AncientOne = ##class(BG.EldritchHorror.AncientOne).NameIndexOpen(aOne)
 	
 	set session.Won = won
+	if session.Won = "" { 
+		set session.Won = 0 
+	}
 	
 	set session.Doom = doom
 	set session.Gates = gates

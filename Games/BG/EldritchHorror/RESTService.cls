@@ -77,7 +77,7 @@ ClassMethod GetSession(id) As %Status
 		return st
 	}
 	
-	set players = ##class(BG.SessionPlayer).GetPlayersArray(id,.st)
+	set players = ##class(BG.EldritchHorror.SessionPlayer).GetPlayersArray(id,.st)
 	if $$$ISERR(st) {
 		return st
 	}
@@ -128,7 +128,7 @@ ClassMethod InsertSession() As %Status
 			set player = $zstrip(player, ">W")
 			set player = $zstrip(player, "*C")
 			
-			set st = ##class(BG.SessionPlayer).InsertSessionPlayer(Id,player)
+			set st = ##class(BG.EldritchHorror.SessionPlayer).InsertSessionPlayer(Id,player)
 			
 			$$$ThrowOnError(st)
 			
