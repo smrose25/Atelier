@@ -59,10 +59,12 @@ ClassMethod CreateOrder() As FCE.CurrencyOrder
 	set amountOut			  = 95
 	set currencyIn            = "USD"
 	set amountIn              = 100
+	#dim ATM as FCE.ATM
 	set ATM = ##class(FCE.ATM).%New()
 	set ATM.SerialNumber = ##class(%PopulateUtils).String(5)_##class(%PopulateUtils).String(5)
 	do ATM.CurrencyBalances.SetAt(250,"EUR")
 	do ATM.CurrencyBalances.SetAt(50,"USD")
+	#dim order as FCE.CurrencyOrder
 	set order = ##class(FCE.CurrencyOrder).%New(currencyOut,
 								                amountOut,
 	                                            currencyIn,
@@ -76,7 +78,7 @@ ClassMethod CreateOrder() As FCE.CurrencyOrder
 /// helper method for tests
 ClassMethod CreateAccount() As FCE.AccountHolder
 {
-	
+	#dim account as FCE.AccountHolder	
 	set account = ##class(FCE.AccountHolder).%New()
 	set account.Name = "Smith,John"
 	set account.Email = "Smith@zzz.com"
