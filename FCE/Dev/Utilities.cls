@@ -6,6 +6,7 @@ ClassMethod ResetStorage(package As %String)
 {
 	if ($get(package) = "") {
 		write !, "Please supply package or sub-package name as argument." return }
+	#dim resultSet as %ResultSet
 	set resultSet = ##class(%ResultSet).%New()
 	set resultSet.ClassName = "%Dictionary.ClassDefinition"
 	set resultSet.QueryName = "FormWizard"
@@ -16,12 +17,13 @@ ClassMethod ResetStorage(package As %String)
 	while resultSet.%Next() {
 		set className = resultSet.%GetData(1)
 		continue:(className'?@pattern)
+		#dim class as %Dictionary.ClassDefinition
 		set class = ##class(%Dictionary.ClassDefinition).%OpenId(className)
 		write !, className
 		do class.Storages.Clear()
 		do class.%Save()
 	}
-	do resultSet.%Close()
+	do resultSet.Close()
 	write !, "Compiling classes..."
 	do $system.OBJ.CompilePackage(package,"k")
 }
@@ -52,6 +54,7 @@ ClassMethod RemovePopulation(package As %String, commit As %Boolean = 0) As %Sta
 		write !, classname, ?20, propertyname
 		
 		// process superclass list (extends)
+		#dim class as %Dictionary.ClassDefinition
 		set class = ##class(%Dictionary.ClassDefinition).%OpenId(classname)
 		set classes(classname) = ""
 		set super = class.Super
@@ -73,6 +76,7 @@ ClassMethod RemovePopulation(package As %String, commit As %Boolean = 0) As %Sta
 		
 		// process POPSPEC
 		if propertyname '= "" {
+			#dim property as %Dictionary.PropertyDefinition
 			set property = ##class(%Dictionary.PropertyDefinition).IDKEYOpen(classname,propertyname)
 			do property.Parameters.RemoveAt("POPSPEC") 
 		}
@@ -93,13 +97,15 @@ ClassMethod RemovePopulation(package As %String, commit As %Boolean = 0) As %Sta
 }
 
 /// Load Person classes (exercise B-1), and update classes programatically using %Dictionary package
-ClassMethod LoadConfigPerson(directory As %String = "c:\Foundations\PersonOnly.xml")
+ClassMethod LoadConfigPerson(directory As %String = "c:\Development\Studio\PersonOnly.xml")
 {
 	set st = $system.OBJ.Load(directory, "ck")
 	quit:$$$ISERR(st)
+	#dim classEmployee, classAccountHolder, classCurrencyOrder as %Dictionary.ClassDefinition
 	set classEmployee = ##class(%Dictionary.ClassDefinition).%OpenId("FCE.Employee")
 	set classAccountHolder = ##class(%Dictionary.ClassDefinition).%OpenId("FCE.AccountHolder")
 	set classCurrencyOrder = ##class(%Dictionary.ClassDefinition).%OpenId("FCE.CurrencyOrder")
+	#dim propEmptoCO as %Dictionary.PropertyDefinition
 	set propEmptoCO = ##class(%Dictionary.PropertyDefinition).%New()
 	set propEmptoCO.Name = "ApprovedOrders",
 	    propEmptoCO.Type = "FCE.CurrencyOrder",
@@ -107,6 +113,7 @@ ClassMethod LoadConfigPerson(directory As %String = "c:\Foundations\PersonOnly.x
 	    propEmptoCO.Cardinality = "many",
 	    propEmptoCO.Inverse = "Employee",
 	    propEmptoCO.Description = "Exchanges that this employee approved"
+	#dim propAccttoCO as %Dictionary.PropertyDefinition
 	set propAccttoCO = ##class(%Dictionary.PropertyDefinition).%New()
 	set propAccttoCO.Name = "CurrencyOrders",
 	    propAccttoCO.Type = "FCE.CurrencyOrder",
@@ -117,12 +124,14 @@ ClassMethod LoadConfigPerson(directory As %String = "c:\Foundations\PersonOnly.x
 	set propEmptoCO.parent = classEmployee
 	set propAccttoCO.parent = classAccountHolder
 	
+	#dim propCOtoEmp as %Dictionary.PropertyDefinition
 	set propCOtoEmp = ##class(%Dictionary.PropertyDefinition).%New()
 	set propCOtoEmp.Name = "Employee",
 	    propCOtoEmp.Type = "FCE.Employee",
 	    propCOtoEmp.Relationship = 1,
 	    propCOtoEmp.Cardinality = "one",
 	    propCOtoEmp.Inverse = "ApprovedOrders"
+	#dim propCOtoAcct as %Dictionary.PropertyDefinition
 	set propCOtoAcct = ##class(%Dictionary.PropertyDefinition).%New()
 	set propCOtoAcct.Name = "AccountHolder",
 	    propCOtoAcct.Type = "FCE.AccountHolder",
@@ -132,6 +141,7 @@ ClassMethod LoadConfigPerson(directory As %String = "c:\Foundations\PersonOnly.x
 	set propCOtoEmp.parent = classCurrencyOrder
 	set propCOtoAcct.parent = classCurrencyOrder
 	
+	#dim indexEmp, indexAcct as %Dictionary.IndexDefinition
 	set indexEmp = ##class(%Dictionary.IndexDefinition).%New()
 	set indexEmp.Name = "EmployeeIndex", indexEmp.Properties = "Employee"
 	set indexEmp.parent = classCurrencyOrder

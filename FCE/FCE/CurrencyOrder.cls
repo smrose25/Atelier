@@ -2,6 +2,9 @@
 Class FCE.CurrencyOrder Extends (%Persistent, %Populate, %XML.Adaptor)
 {
 
+/// Generate more performant globals
+Parameter USEEXTENTSET = 1;
+
 /// name of requestor
 Property Requestor As %String(POPSPEC = "Name()");
 
@@ -68,12 +71,14 @@ Index InIndex On CurrencyIn [ Type = bitmap ];
 /// When a CurrencyOrder is updated or deleted, record that in the ATM Notes
 Trigger UpdateDeleteInNotes [ Event = UPDATE/DELETE, Foreach = row/object, Time = AFTER ]
 {
+
 	new changed, note, atm, st // ensure variables are private to trigger
 	return:({ATM} = "")   // if this CurrencyOrder has no ATM, just exit
 	set changed = $case({%%OPERATION}, "DELETE":"deleted", "UPDATE":"updated")
 	set note = "At " _ $zdt($h) _ ", " _ $username _ " " _ changed _ " Order #"
 			   _ {ID} _ " originally requested by " _ {Requestor}
 	           _ " (for " _ {AmountOut} _ " " _ {CurrencyOut} _ ")"
+	#dim atm as FCE.ATM
 	set atm = ##class(FCE.ATM).%OpenId({ATM}, 4, .st)
 	if $$$ISOK(st) {
 	do atm.Notes.MoveToEnd()
@@ -114,10 +119,10 @@ ClassMethod OrdersByCity(orderStatus As %String = "Pending") As %Status
           from FCE.CurrencyOrder
           where Status = :orderStatus
           order by ATM->Branch->Address->City)
-          
      &sql(open bycity)
-     
      write !, orderStatus, " Orders"
+	 write !, "City", ?20, "Amount In", ?30, "Currency In", ?55, "Amount Out", ?70,
+	              "Currency Out", ?95, "Date Stamp", ?110, "Time Stamp"
      for {
 	     &sql(fetch bycity into :city, :amountIn, :currencyIn, :amountOut,
 	                             :currencyOut, :dateStamp, :timeStamp)
@@ -173,6 +178,7 @@ Method OnPopulate() As %Status
 /// When a currency order row/object is deleted, delete its payment
 Trigger DeletePayment [ Event = DELETE, Foreach = row/object, Time = AFTER ]
 {
+
 	return:({Payment} = "")
     new SQLCODE // ensure SQLCODE is private to trigger
     &sql(delete from FCE.Payment where ID = :{Payment})
@@ -234,11 +240,39 @@ Storage Default
 <Value>Status</Value>
 </Value>
 </Data>
-<DataLocation>^FCE.CurrencyOrderD</DataLocation>
+<DataLocation>^BaRe.BSqw.1</DataLocation>
 <DefaultData>CurrencyOrderDefaultData</DefaultData>
+<ExtentLocation>^BaRe.BSqw</ExtentLocation>
 <ExtentSize>30</ExtentSize>
-<IdLocation>^FCE.CurrencyOrderD</IdLocation>
-<IndexLocation>^FCE.CurrencyOrderI</IndexLocation>
+<IdLocation>^BaRe.BSqw.1</IdLocation>
+<Index name="$CurrencyOrder">
+<Location>^BaRe.BSqw.2</Location>
+</Index>
+<Index name="ATMIndex">
+<Location>^BaRe.BSqw.3</Location>
+</Index>
+<Index name="AccountHolderIndex">
+<Location>^BaRe.BSqw.4</Location>
+</Index>
+<Index name="EmployeeIndex">
+<Location>^BaRe.BSqw.5</Location>
+</Index>
+<Index name="IDKEY">
+<Location>^BaRe.BSqw.1</Location>
+</Index>
+<Index name="InIndex">
+<Location>^BaRe.BSqw.6</Location>
+</Index>
+<Index name="OutIndex">
+<Location>^BaRe.BSqw.7</Location>
+</Index>
+<Index name="PaymentIndex">
+<Location>^BaRe.BSqw.8</Location>
+</Index>
+<Index name="StatusIndex">
+<Location>^BaRe.BSqw.9</Location>
+</Index>
+<IndexLocation>^BaRe.BSqw.I</IndexLocation>
 <Property name="%%CLASSNAME">
 <AverageFieldSize>1</AverageFieldSize>
 <Selectivity>100.0000%</Selectivity>
@@ -341,8 +375,8 @@ Storage Default
 <SQLMap name="StatusIndex">
 <BlockCount>-4</BlockCount>
 </SQLMap>
-<StreamLocation>^FCE.CurrencyOrderS</StreamLocation>
-<Type>%Library.CacheStorage</Type>
+<StreamLocation>^BaRe.BSqw.S</StreamLocation>
+<Type>%Storage.Persistent</Type>
 }
 
 }

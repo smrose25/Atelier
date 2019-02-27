@@ -6,10 +6,10 @@ Class FCE.Currency Extends %Persistent [ DependsOn = FCE.CurrencyName ]
 Parameter ABBREVIATIONS = {##class(FCE.CurrencyName).#VALUELIST};
 
 /// access key for apilayer.net, for InterSystems training use ONLY!
-Parameter ACCESSKEY = "0017046a49714ee66280c0dd4517564c";
+Parameter ACCESSKEY;
 
 /// default rates in case call to apilayer.net fails
-Parameter DEFAULTRATES = "{""USDEUR"":1,""USDINR"":65,""USDVEF"":10,""USDJPY"":110,""USDMXN"":20,""USDZAR"":15,""USDBRL"":3,""USDCAD"":1,""USDRUB"":60}";
+Parameter DEFAULTRATES = "{""USDEUR"":1,""USDINR"":65,""USDGBP"":1,""USDJPY"":110,""USDMXN"":20,""USDZAR"":15,""USDBRL"":3,""USDCAD"":1,""USDRUB"":60}";
 
 /// Currency is an alternate key
 Property Currency As FCE.CurrencyName [ Required ];
@@ -54,6 +54,7 @@ ClassMethod CurrencyKeysValidate(balancesArray As %Collection.ArrayOfDT) As %Sta
 /// fetch currency rates from currencylayer.com as JSON with a REST Get
 ClassMethod FetchRates(verbose As %Boolean = 0) As %Status
 {
+	#dim currency as FCE.Currency
 	// create USD object if it doesn't exist already
 	if '(..CurrencyIndexExists("USD")) {
 		set currency = ..%New()
@@ -71,6 +72,8 @@ ClassMethod FetchRates(verbose As %Boolean = 0) As %Status
 	// change current delimiter to ,
 	set currencies = $translate(currencies, delim, ",")
 
+	#dim request as %Net.HttpRequest
+	#dim response, rates as %DynamicObject
 	set request = ##class(%Net.HttpRequest).%New()
 	set request.Server="apilayer.net"
 	set uri = "/api/live?access_key=" _ ..#ACCESSKEY _
@@ -96,6 +99,7 @@ ClassMethod FetchRates(verbose As %Boolean = 0) As %Status
 	if verbose { write !, "Rates:", !, rates.%ToJSON(), ! }
 	
 	// iterate through the JSON object
+	#dim i as %Iterator.Object
 	set i = rates.%GetIterator()
 	while i.%GetNext(.key, .value) {
 		write:verbose !, key _ ":" _ value
@@ -135,7 +139,7 @@ ClassMethod ComputeRate(currencyIn As FCE.CurrencyName, currencyOut As FCE.Curre
 
 	if (sqlcode1 = 0) && (sqlcode2 = 0) {
 		// compute the exchange rate between currencyIn and currencyOut
-		return (1 / inRate) * outRate
+		return (outRate / inRate)
 	}
 	else {
 		write !, "Error code(s): ", sqlcode1, " ", sqlcode2
@@ -152,8 +156,10 @@ ClassMethod ImportImages(directory As %String)
 	for image = 1: 1 : $listlength(currencies)
 	{
 		set currencyName = $list(currencies, image)
+		#dim currency as FCE.Currency
 		set currency = ##class(FCE.Currency).CurrencyIndexOpen(currencyName)
 	
+		#dim file as %Stream.FileBinary
 		set file = ##class(%Stream.FileBinary).%New()
 		set file.Filename = directory _ currencyName _ ".jpg"
 		
@@ -195,7 +201,7 @@ Storage Default
 <IdLocation>^FCE.CurrencyD</IdLocation>
 <IndexLocation>^FCE.CurrencyI</IndexLocation>
 <StreamLocation>^FCE.CurrencyS</StreamLocation>
-<Type>%Library.CacheStorage</Type>
+<Type>%Storage.Persistent</Type>
 }
 
 }

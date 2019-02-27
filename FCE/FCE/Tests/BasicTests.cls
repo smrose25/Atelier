@@ -11,11 +11,13 @@ Property UnrefdRealEstate As FCE.RealEstate [ Private ];
 Method OnBeforeAllTests() As %Status
 {
  	// create a Branch with this phone #
+ 	#dim branch as FCE.Branch
 	set branch = ##class(FCE.Branch).%New()
 	set branch.Phone = "999-999-9999"
  
  	/* create a dummy RealEstate object, link it to the Branch above
        and save the object in the "global" RefdRealEstate property */
+ 	#dim realestate as FCE.RealEstate
 	set realestate = ##class(FCE.RealEstate).%New()
 	set realestate.Street = "10 Main Street"
 	set realestate.City = "New York"
@@ -54,6 +56,7 @@ Method OnAfterAllTests() As %Status
 Method TestBranch()
 {
 	// assertion 1
+ 	#dim branch as FCE.Branch
 	set branch = ##class(FCE.Branch).%New()
 	do $$$AssertTrue($isobject(branch),"Created New Branch")
 	
@@ -145,6 +148,7 @@ Method TestBranchSQL()
 Method TestATM()
 {
 	// assertion 1
+ 	#dim branch as FCE.Branch
 	set branch = ##class(FCE.Branch).%New()
 	set branch.Phone = "999-999-0000"
 	set status = branch.%Save()
@@ -154,6 +158,7 @@ Method TestATM()
 	set countOfATMs = branch.ATMs.Count()
 	do $$$AssertEquals(countOfATMs, 0, "No ATMs yet")
 	// assertion 3
+	#dim ATMOne as FCE.ATM
 	set ATMOne = ##class(FCE.ATM).%New()
 	do $$$AssertTrue($isobject(ATMOne), "Create ATMOne")
 	// assertion 4
@@ -171,6 +176,7 @@ Method TestATM()
 	set ATMOneID = ATMOne.%Id()
 	do $$$AssertNotEquals(ATMOneID, "", "ATMOne ID assigned")
 	// assertion 8
+	#dim ATMTwo as FCE.ATM
 	set ATMTwo = ##class(FCE.ATM).%New()
 	do $$$AssertTrue($isobject(ATMTwo), "Create ATMTwo")
 	// assertion 9
@@ -237,6 +243,7 @@ Method TestATMSQL()
 Method TestRealEstate()
 {
  	// assertion 1
+ 	#dim realestate as FCE.RealEstate
 	set realestate = ##class(FCE.RealEstate).%New()
 	set status = realestate.%Save()
 	do $$$AssertStatusNotOK(status, "Real Estate requires all 4 properties")
@@ -270,6 +277,7 @@ Method TestRealEstate()
 	set realestateID = realestate.%Id()
 	do $$$AssertStatusOK(status, "Real Estate saved")
 	// assertion 9
+ 	#dim branch as FCE.Branch
 	set branch = ##class(FCE.Branch).%New()
 	set branch.Phone = "999-999-0000"
 	set branch.Address = realestate
@@ -342,9 +350,11 @@ Method TestRealEstateSQL()
 Method TestCurrencies()
 {
 	// assertion 1
+	#dim ATMOne as FCE.ATM
 	set ATMOne = ##class(FCE.ATM).%New()
 	set ATMOne.SerialNumber = "a111"
 	do ATMOne.CurrencyBalances.SetAt(100000,"USD")
+ 	#dim branch as FCE.Branch
 	set branch = ##class(FCE.Branch).%New()
 	set branch.Phone = "999-999-0000"
 	set ATMOne.Branch = branch
@@ -399,7 +409,9 @@ Method TestCurrenciesSQL()
 Method TestUpdateATM()
 {
 	// create branch and ATM
+ 	#dim branch as FCE.Branch
 	set branch = ##class(FCE.Branch).%New()
+	#dim ATM as FCE.ATM
 	set ATM = ##class(FCE.ATM).%New()
 	set ATM.SerialNumber = "X1111Y2222"
 	set euros = 150, dollars = 50
@@ -456,6 +468,7 @@ Method TestUpdateATM()
 Method TestUpdateBranch()
 {
 	// create branch
+ 	#dim branch as FCE.Branch
 	set branch = ##class(FCE.Branch).%New()
 	set dollars = 50
 	do branch.CurrencyBalances.SetAt(dollars,"USD")

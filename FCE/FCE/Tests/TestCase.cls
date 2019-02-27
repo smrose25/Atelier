@@ -20,7 +20,7 @@ ClassMethod Run(logging As %Boolean = 0)
     
     // set up ^UnitTestRoot if not already set
     if '$data(^UnitTestRoot) {
-    	set mainFolder = "c:\Foundations\" 
+    	set mainFolder = "UnitTests\FCE\" 
 	    set st = ##class(%File).CreateDirectoryChain(mainFolder _ testSuite)
 	    if $$$ISOK(st) { set ^UnitTestRoot = mainFolder }
 	    else { write !, "UnitTestRoot folder could not be created. Consult with instructor." }

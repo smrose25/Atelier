@@ -4,7 +4,10 @@ Class FCE.RealEstate Extends (%Persistent, FCE.Address)
 
 ClassMethod ByZip(state As %String = "", Output status As %Status) As %SQL.StatementResult [ ReturnResultsets, SqlProc ]
 {
+	#dim %sqlcontext as %ProcedureContext
+	#dim resultSet as %SQL.StatementResult
 	set resultSet = $$$NULLOREF
+	#dim statement as %SQL.Statement
 	set statement = ##class(%SQL.Statement).%New()
 	set sql = "select zip, street, city, state from fce.realestate"
 	if (state '= "") {
@@ -91,7 +94,7 @@ Storage Default
 <BlockCount>-4</BlockCount>
 </SQLMap>
 <StreamLocation>^FCE.RealEstateS</StreamLocation>
-<Type>%Library.CacheStorage</Type>
+<Type>%Storage.Persistent</Type>
 }
 
 }

@@ -18,10 +18,12 @@ Method OnAfterAllTests() As %Status
 Method OnBeforeAllTests() As %Status
 {
 	// create branch
+	#dim branch as FCE.Branch
 	set branch = ##class(FCE.Branch).%New()
 	set phone = "999-999-0000", branch.Phone = phone
 	set status = branch.%Save()
 
+	#dim order as FCE.CurrencyOrder
 	set order = ##class(FCE.Tests.Utilities).CreateOrder()
 	set order.ATM.Branch = branch
 	set status = order.%Save()
@@ -39,6 +41,7 @@ Method OnBeforeOneTest() As %Status
 Method TestCashPayment()
 {
 	set order = ..Order
+	#dim cashPayment as FCE.Cash
 	set cashPayment = ##class(FCE.Cash).%New()
 	do $$$AssertTrue($isobject(cashPayment), "Create new cash payment")
 	set order.Payment = cashPayment 
@@ -60,6 +63,7 @@ Method TestCashPayment()
 Method TestCCPayment()
 {
 	set order = ..Order
+	#dim CCPayment as FCE.CreditCard
 	set CCPayment = ##class(FCE.CreditCard).%New()
 	do $$$AssertTrue($isobject(CCPayment), "Create new credit card payment")
 	set CCPayment.Type = "XYZ"
@@ -91,9 +95,11 @@ Method TestCCPayment()
 Method TestAccountPayment()
 {
 	set order = ..Order
+	#dim accountPayment as FCE.AccountPayment
 	set accountPayment = ##class(FCE.AccountPayment).%New()
 	do $$$AssertTrue($isobject(accountPayment), "Create new account payment")
 	set order.Payment =  accountPayment
+	#dim accountHolder as FCE.AccountHolder	
 	set accountHolder = ##class(FCE.Tests.Utilities).CreateAccount()
 	set order.AccountHolder = accountHolder
 	set status = accountPayment.Process(order, .accountPaymentMessage)

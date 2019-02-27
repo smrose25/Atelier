@@ -27,6 +27,7 @@ ClassMethod ProcessRequest(orderATM As FCE.ATM, requestor As %String, requestorE
 		return $$$NULLOREF
 	}
 	else {
+		#dim order as FCE.CurrencyOrder
 		set order = ##class(FCE.CurrencyOrder).%New(currencyOut,
 		                                            amountOut,
 		                                            currencyIn,
@@ -94,10 +95,12 @@ ClassMethod SendConfirmation(order As FCE.CurrencyOrder) As %Status
 	//disabled for now; comment following line to enable
 	return 1
 	// define an smtp server
+	#dim mailServer as %Net.SMTP
 	set mailServer = ##class(%Net.SMTP).%New()
 	set mailServer.smtpserver = "mail.intersystems.com" ; your smtp server
 	set mailServer.timezone = "-0500"  ; your timezone
 	// define a message
+	#dim message as %Net.MailMessage
 	set message = ##class(%Net.MailMessage).%New()
 	set message.Subject = "Confirmation of " _ order.Status _ " currency exchange"
 	set message.From = "auto-confirm@fcxbank.com"
@@ -119,6 +122,7 @@ ClassMethod SendConfirmation(order As FCE.CurrencyOrder) As %Status
 ClassMethod CreatePayment(paymentType As %String, ccType As %String, ccNumber As %String, ccExpiration As %Date) As FCE.Payment
 {
 	if (paymentType = "Credit Card") {
+		#dim cc as FCE.CreditCard
 		set cc = ##class(FCE.CreditCard).%New()
 		set cc.Type = ccType,
 		    cc.Number = ccNumber,

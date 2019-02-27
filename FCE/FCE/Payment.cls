@@ -40,7 +40,7 @@ Storage Default
 <IdLocation>^FCE.PaymentD</IdLocation>
 <IndexLocation>^FCE.PaymentI</IndexLocation>
 <StreamLocation>^FCE.PaymentS</StreamLocation>
-<Type>%Library.CacheStorage</Type>
+<Type>%Storage.Persistent</Type>
 }
 
 }

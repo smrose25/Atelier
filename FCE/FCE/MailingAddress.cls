@@ -20,7 +20,7 @@ Storage Default
 </Data>
 <State>MailingAddressState</State>
 <StreamLocation>^FCE.MailingAddressS</StreamLocation>
-<Type>%Library.CacheSerialState</Type>
+<Type>%Storage.Serial</Type>
 }
 
 }

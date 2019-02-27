@@ -46,7 +46,7 @@ XData Contents [ XMLNamespace = "http://www.intersystems.com/zen" ]
 
 ClientMethod showImage() [ Language = javascript ]
 {
-	imagelist = ["USD", "EUR", "INR", "VEF", "JPY",
+	imagelist = ["USD", "EUR", "INR", "GBP", "JPY",
 	             "MXN", "ZAR", "BRL", "CAD", "RUB"];
 
 	if (zenPage.Current != "") {
@@ -67,9 +67,11 @@ Method %OnAfterCreatePage() As %Status
 	set currencies = ##class(FCE.Currency).ConvertCurrenciestoListString(abbreviations)
 	for i=1:1:$listlength(currencies) {
 		set componentID = "img" _ $list(currencies, i)
+		#dim img as %ZEN.Component.image
 		set img = ##class(%ZEN.Component.image).%New()
 		set img.id = componentID, img.hidden = 1
 		do %page.%AddChild(img)
+		#dim currencyImage as %Stream.GlobalBinary
 		set currencyImage = ##class(FCE.Currency).%OpenId(i).Image
 		set oid = currencyImage.%Oid()
 		set img.streamId = oid

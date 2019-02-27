@@ -7,6 +7,7 @@ Method TestCurrencyOrderCreate()
 	set currencyOut    = "EUR"
 	set currencyIn     = "USD"
 	set (amountOut, amountIn) = -1 // bad values
+	#dim order as FCE.CurrencyOrder
 	set order = ##class(FCE.CurrencyOrder).%New(currencyOut,
 	                                            amountOut,
 	                                            currencyIn,
@@ -38,6 +39,7 @@ Method TestGetAmountOutAndFee()
 /// test FCE.Operations.ATM.ProcessRequest
 Method TestProcessRequest()
 {
+	#dim ATM as FCE.ATM
 	set ATM = ##class(FCE.ATM).%New()
 	do ATM.CurrencyBalances.SetAt(200,"EUR")
 	do ATM.CurrencyBalances.SetAt(50,"USD")
@@ -46,6 +48,7 @@ Method TestProcessRequest()
 	set currencyOut    = "EUR"
 	set currencyIn     = "USD"
 	set amountIn       = -1
+	#dim order as FCE.CurrencyOrder
 	set order = ##class(FCE.Operations.ATM).ProcessRequest(ATM,
 														   requestor, 
 	                                                       requestorEmail,
@@ -75,11 +78,13 @@ Method TestProcessRequest()
 Method TestProcessOrder()
 {
 	// create branch
+	#dim branch as FCE.Branch
 	set branch = ##class(FCE.Branch).%New()
 	set phone = "999-999-0000", branch.Phone = phone
 	set status = branch.%Save()
 
 	// create order #1
+	#dim order1 as FCE.CurrencyOrder
 	set order1 = ##class(FCE.Tests.Utilities).CreateOrder()
 	set order1.ATM.Branch = branch
 	set payment1 = ##class(FCE.Operations.ATM).CreatePayment("Cash")
@@ -93,9 +98,11 @@ Method TestProcessOrder()
 	do $$$AssertEquals(euros, 155, "Outgoing Currency updated in ATM")
 
 	// create account for order #2
+	#dim account as FCE.AccountHolder
 	set account = ##class(FCE.Tests.Utilities).CreateAccount()
 	
 	// create order #2
+	#dim order2 as FCE.CurrencyOrder
 	set order2 = ##class(FCE.Tests.Utilities).CreateOrder()
 	set order2.ATM.Branch = branch
 	set payment2 = ##class(FCE.Operations.ATM).CreatePayment("Account")
@@ -124,6 +131,7 @@ Method TestProcessOrder()
 	do $$$AssertEquals(euros, 155, "Outgoing Currency updated in ATM")
 
 	// create order #3
+	#dim order3 as FCE.CurrencyOrder
 	set order3 = ##class(FCE.Tests.Utilities).CreateOrder()
 	set order3.ATM.Branch = branch
 	set payment3 = ##class(FCE.Operations.ATM).CreatePayment("Credit Card","Visa","1234-4444-3333-2222",($h + 1095))
@@ -135,9 +143,11 @@ Method TestProcessOrder()
 	do $$$AssertEquals(euros, 155, "Outgoing Currency updated in ATM")
 
 	// create order #4 to test rollback
+	#dim order4 as FCE.CurrencyOrder
 	set order4 = ##class(FCE.Tests.Utilities).CreateOrder()
 	set order4.AmountOut = 10000
 	set order4.ATM.Branch = branch
+	#dim payment4 as FCE.CreditCard
 	set payment4 = ##class(FCE.Operations.ATM).CreatePayment("Credit Card","Visa","1234-4444-3333-2222",($h + 1095))
 	set status = ##class(FCE.Operations.ATM).ProcessOrder(order4, payment4, , .message4)
 	set paymentID = payment4.%Id()
@@ -169,15 +179,18 @@ Method TestProcessOrder()
 Method TestCOTrigger()
 {
 	// create branch
+	#dim branch as FCE.Branch
 	set branch = ##class(FCE.Branch).%New()
 	set phone = "999-999-0000", branch.Phone = phone
 	set status = branch.%Save()
 
 	// create ATM and order
+	#dim ATM as FCE.ATM
 	set ATM = ##class(FCE.ATM).%New()
 	set ATM.SerialNumber = "a111"
 	do ATM.CurrencyBalances.SetAt(250, "EUR")
 	do ATM.CurrencyBalances.SetAt(50, "USD")
+	#dim order as FCE.CurrencyOrder
 	set order = ##class(FCE.CurrencyOrder).%New()
 	set order.CurrencyOut = "EUR"
 	set order.AmountOut = 95
@@ -194,6 +207,7 @@ Method TestCOTrigger()
 	set status = order.%Save()
 	do $$$AssertStatusOK(status, "Fee changed, Order saved")
 	
+	#dim atmNotes as %Stream.GlobalCharacter
 	set atmNotes = order.ATM.Notes
 	set length1 = atmNotes.Size
 	do $$$AssertTrue(length1 > 0, "ATM Notes got longer")

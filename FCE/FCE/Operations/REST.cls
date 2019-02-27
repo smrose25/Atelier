@@ -14,6 +14,7 @@ XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
 
 ClassMethod RetrieveBranch(branchID As %String) As %Status
 {
+	#dim branch as FCE.Branch
 	set branch = ##class(FCE.Branch).%OpenId(branchID, , .st)
 	if (st = 1) {
 		set jsonBranch = {}
@@ -27,6 +28,7 @@ ClassMethod CreateBranch() As %Status
 {
 	#dim %request As %CSP.Request
 	set data = ##class(%DynamicObject).%FromJSON(%request.Content)
+	#dim branch as FCE.Branch
 	set branch = ##class(FCE.Branch).%New()
 	do branch.CopyFromObject(data)
 	set st = branch.%Save()

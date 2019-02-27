@@ -31,19 +31,18 @@ Relationship Orders As FCE.CurrencyOrder [ Cardinality = many, Inverse = ATM ];
 Method Update(currencyOut As FCE.CurrencyName = "", amountOut As %Numeric = 0, currencyIn As FCE.CurrencyName = "", amountIn As %Numeric = 0) As %Status
 {
 	try {
+		#dim cb as %Collection.ArrayOfDT
+		set cb = ..CurrencyBalances
 		set status = $$$OK
 		set (outChanged, inChanged) = 0
 		
 		// debit stock amount by amount taken out
 		if (currencyOut '= "") && (amountOut > 0) {
 			set outChanged = 1
-			
-			set stockAmountOut = ..CurrencyBalances.GetAt(currencyOut)
+			set stockAmountOut = cb.GetAt(currencyOut)
 			set debitedAmountOut = stockAmountOut - amountOut
-			do ..CurrencyBalances.SetAt(debitedAmountOut, currencyOut)
-			
+			do cb.SetAt(debitedAmountOut, currencyOut)
 			set status = ..%ValidateObject()
-			
 			if $$$ISERR(status) {
 				set ex = ##class(%Exception.StatusException).CreateFromStatus(status)
 				throw ex
@@ -53,33 +52,30 @@ Method Update(currencyOut As FCE.CurrencyName = "", amountOut As %Numeric = 0, c
 		// credit stock amount by amount put in
 		if (currencyIn '= "") && (amountIn > 0) {
 			set inChanged = 1
-			set stockAmountIn = ..CurrencyBalances.GetAt(currencyIn)
+			set stockAmountIn = cb.GetAt(currencyIn)
 			set creditedAmountIn = stockAmountIn + amountIn
-			do ..CurrencyBalances.SetAt(creditedAmountIn, currencyIn)
+			do cb.SetAt(creditedAmountIn, currencyIn)
 			set status = ..%ValidateObject()
 			if $$$ISERR(status) {
 				set ex = ##class(%Exception.StatusException).CreateFromStatus(status)
 				throw ex
 			}
 		}
-		
+		// create unforseen <DIVIDE> exception 10% of the time
+		// if '$r(10) {write 1/0}
 	}
 	catch ex {
 		#dim ex, exCustom as %Exception.StatusException // enable Studio Assist for the exception objects
 		// return custom error status and also write it to Application Error Log
 		if (ex.Code = $$$ERRORCODE($$$DTMinVal)) {
-			
 			set custom = "Not enough stock in ATM " _ ..SerialNumber _ " for " _ currencyOut
 			set status = $$$ERROR($$$GeneralError, custom)
-			
 			set exCustom = ##class(%Exception.StatusException).CreateFromStatus(status)
 			do exCustom.Log()
 		}
 		elseif (ex.Code = $$$ERRORCODE($$$DTMaxVal)) {
-			
 			set custom = "ATM " _ ..SerialNumber _ " has no more room for " _ currencyIn
 			set status = $$$ERROR($$$GeneralError, custom)
-			
 			set exCustom = ##class(%Exception.StatusException).CreateFromStatus(status)
 			do exCustom.Log()
 		}
@@ -88,18 +84,14 @@ Method Update(currencyOut As FCE.CurrencyName = "", amountOut As %Numeric = 0, c
 			set status = ex.AsStatus()
 			do ex.Log()
 		}
-		
 		// reset currencyIn and currencyOut
-		if (outChanged) {
-			do ..CurrencyBalances.SetAt(stockAmountOut, currencyOut)
-		}
-		if (inChanged) {
-			do ..CurrencyBalances.SetAt(stockAmountIn, currencyIn)
-		}
+		do:outChanged cb.SetAt(stockAmountOut, currencyOut)
+		do:inChanged cb.SetAt(stockAmountIn, currencyIn)
+		
 		// write to console log, optionally triggering notification
-		//set consoleMsg = "ATM " _ ..SerialNumber _ " Stock Problem - Check Error Log for details: "
-		//set portalLink = "http://localhost:57772/csp/sys/op/UtilSysAppErrorNamespaces.csp"
-		//do ##class(%SYS.System).WriteToConsoleLog(consoleMsg _ portalLink, , 2)
+		set consoleMsg = "ATM " _ ..SerialNumber _ " Stock Problem - Check Error Log for details: "
+		set portalLink = "http://localhost:52773/csp/sys/op/UtilSysAppErrorNamespaces.csp"
+		do ##class(%SYS.System).WriteToConsoleLog(consoleMsg _ portalLink, , 2)
 	}
 	return status
 }
@@ -125,17 +117,13 @@ order by Address->State, Address->City
 
 ClassMethod CitiesStatesList() As %Status
 {
+	#dim resultSet as %ResultSet
 	set resultSet = ##class(%ResultSet).%New("FCE.ATM:CitiesStates")
 	set status = resultSet.%Execute()
-	
-	if $$$ISERR(status) {
-		return status
-	}
-	
 	while resultSet.%Next() {
-		write !, resultSet.City, ", ", resultSet.State
+		write !, resultSet.City, ?25, resultSet.State
 	}
-	do resultSet.%Close()
+	do resultSet.Close()
 	return $$$OK
 }
 
@@ -228,7 +216,7 @@ Storage Default
 <BlockCount>-4</BlockCount>
 </SQLMap>
 <StreamLocation>^FCE.ATMS</StreamLocation>
-<Type>%Library.CacheStorage</Type>
+<Type>%Storage.Persistent</Type>
 }
 
 }

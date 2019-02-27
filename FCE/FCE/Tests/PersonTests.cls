@@ -6,6 +6,7 @@ Class FCE.Tests.PersonTests Extends FCE.Tests.TestCase
 Method TestAccountHolder()
 {
 	// assertion 1
+	#dim accountHolder as FCE.AccountHolder		
 	set accountHolder = ##class(FCE.AccountHolder).%New()
 	do $$$AssertTrue($isobject(accountHolder), "Create new account holder")
 	// assertion 2
@@ -92,6 +93,7 @@ Method TestAccountHolderSQL()
 Method TestEmployee()
 {
 	// assertion 1
+	#dim employee as FCE.Employee
 	set employee = ##class(FCE.Employee).%New()
 	do $$$AssertTrue($isobject(employee), "Create new employee")
 	// assertion 2

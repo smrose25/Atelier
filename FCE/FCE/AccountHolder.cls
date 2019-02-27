@@ -101,7 +101,7 @@ Storage Default
 <BlockCount>-4</BlockCount>
 </SQLMap>
 <StreamLocation>^FCE.AccountHolderS</StreamLocation>
-<Type>%Library.CacheStorage</Type>
+<Type>%Storage.Persistent</Type>
 }
 
 }

@@ -14,6 +14,7 @@ Method Process(order As FCE.CurrencyOrder, Output creditCardString As %String = 
 	set status = ##super(order, .paymentString)
 	if ($$$ISERR(status)) { return status }
 	else {
+		#dim ATM as FCE.ATM
 		set ATM = order.ATM
 		// debit ATM
 		set status = ATM.Update(order.CurrencyOut, order.AmountOut)
@@ -82,7 +83,7 @@ Storage Default
 <SQLMap name="$CreditCard">
 <BlockCount>-4</BlockCount>
 </SQLMap>
-<Type>%Library.CacheStorage</Type>
+<Type>%Storage.Persistent</Type>
 }
 
 }

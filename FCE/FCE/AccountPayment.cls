@@ -7,8 +7,11 @@ Method Process(order As FCE.CurrencyOrder, Output accountPaymentString As %Strin
 	set status = ##super(order, .paymentString)
 	if ($$$ISERR(status)) { return status }
 	else {
+		#dim ATM as FCE.ATM
 		set ATM = order.ATM
+		#dim branch as FCE.Branch
 		set branch = ATM.Branch
+		#dim account as FCE.AccountHolder
 		set account = order.AccountHolder
 		// debit ATM
 		set ATMStatus = ATM.Update(order.CurrencyOut, order.AmountOut)
@@ -50,7 +53,7 @@ Storage Default
 <SQLMap name="$AccountPayment">
 <BlockCount>-4</BlockCount>
 </SQLMap>
-<Type>%Library.CacheStorage</Type>
+<Type>%Storage.Persistent</Type>
 }
 
 }

@@ -54,9 +54,11 @@ Method CopyFromObject(object As %DynamicObject) As %Status
 Method Update(currencyIn As FCE.CurrencyName, amountIn As %Numeric) As %Status
 {
 	// credit incoming currency by incoming amount
-	set stockAmountIn = ..CurrencyBalances.GetAt(currencyIn)
+	#dim cb as %Collection.ArrayOfDT
+	set cb = ..CurrencyBalances
+	set stockAmountIn = cb.GetAt(currencyIn)
 	set stockAmountIn = stockAmountIn + amountIn
-	do ..CurrencyBalances.SetAt(stockAmountIn, currencyIn)
+	do cb.SetAt(stockAmountIn, currencyIn)
 	return $$$OK
 }
 
@@ -113,7 +115,7 @@ Storage Default
 </Data>
 <DataLocation>^FCE.BranchD</DataLocation>
 <DefaultData>BranchDefaultData</DefaultData>
-<ExtentSize>5</ExtentSize>
+<ExtentSize>6</ExtentSize>
 <IdLocation>^FCE.BranchD</IdLocation>
 <IndexLocation>^FCE.BranchI</IndexLocation>
 <Property name="%%CLASSNAME">
@@ -125,24 +127,24 @@ Storage Default
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="Address">
-<AverageFieldSize>1.8</AverageFieldSize>
+<AverageFieldSize>1.83</AverageFieldSize>
 <Selectivity>1</Selectivity>
 </Property>
 <Property name="Closes">
-<AverageFieldSize>5</AverageFieldSize>
-<Selectivity>20.0000%</Selectivity>
+<AverageFieldSize>4.17</AverageFieldSize>
+<Selectivity>16.6667%</Selectivity>
 </Property>
 <Property name="DurationOpen">
-<AverageFieldSize>8</AverageFieldSize>
-<Selectivity>20.0000%</Selectivity>
+<AverageFieldSize>6.67</AverageFieldSize>
+<Selectivity>16.6667%</Selectivity>
 </Property>
 <Property name="NationalCurrency">
 <AverageFieldSize>3</AverageFieldSize>
 <Selectivity>100.0000%</Selectivity>
 </Property>
 <Property name="Opens">
-<AverageFieldSize>5</AverageFieldSize>
-<Selectivity>20.0000%</Selectivity>
+<AverageFieldSize>4.17</AverageFieldSize>
+<Selectivity>16.6667%</Selectivity>
 </Property>
 <Property name="Phone">
 <AverageFieldSize>12</AverageFieldSize>
@@ -158,7 +160,7 @@ Storage Default
 <BlockCount>-4</BlockCount>
 </SQLMap>
 <StreamLocation>^FCE.BranchS</StreamLocation>
-<Type>%Library.CacheStorage</Type>
+<Type>%Storage.Persistent</Type>
 }
 
 }
